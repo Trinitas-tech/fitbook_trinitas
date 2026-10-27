@@ -1,0 +1,343 @@
+{
+  "info": {
+    "name": "FitBook API",
+    "_postman_id": "f1b00c0e-2026-4c1d-9a0b-fitbook000001",
+    "description": "Tests de l'API FitBook (Symfony). Scénario complet : listes, connexion, création d'un coach, séance privée (création / modification / suppression) puis suppression du compte par l'administrateur. Chaque requête contient des tests ; les identifiants, jetons et ids sont stockés dans l'environnement et supprimés après chaque suppression.\n\nExécution : newman run postman/FitBook.postman_collection.json -e postman/FitBook.local.postman_environment.json",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Liste des salles (OK)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/gyms?page=1&limit=10", "host": ["{{base_url}}"], "path": ["gyms"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Réponse JSON paginée avec des salles', () => {",
+        "    const body = pm.response.json();",
+        "    pm.expect(body).to.have.property('items').that.is.an('array').and.not.empty;",
+        "    pm.expect(body.total).to.be.a('number').above(0);",
+        "    pm.expect(body.items[0]).to.include.all.keys('id', 'name', 'city');",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "02 - Liste des utilisateurs sans jeton (KO)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/admin/users", "host": ["{{base_url}}"], "path": ["admin", "users"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 401 (authentification requise)', () => pm.response.to.have.status(401));",
+        "pm.test('Message d\\'erreur présent', () => pm.expect(pm.response.json().message).to.be.a('string'));"
+      ] } }]
+    },
+    {
+      "name": "03 - Connexion avec erreur (mauvais mot de passe)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"mauvais-mot-de-passe\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 401', () => pm.response.to.have.status(401));",
+        "pm.test('Message générique, pas de jeton', () => {",
+        "    const body = pm.response.json();",
+        "    pm.expect(body.message).to.eql('Identifiants invalides.');",
+        "    pm.expect(body).to.not.have.property('token');",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "04 - Connexion administrateur (sauvegarde admin_token)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Jeton JWT reçu et sauvegardé', () => {",
+        "    const token = pm.response.json().token;",
+        "    pm.expect(token).to.be.a('string').and.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/);",
+        "    pm.environment.set('admin_token', token);",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "05 - Création d'un coach (sauvegarde user_email + user_id)",
+      "event": [
+        { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+          "// Identifiant unique pour pouvoir rejouer la collection",
+          "pm.environment.set('user_email', 'coach.newman.' + Date.now() + '@fitbook.test');"
+        ] } },
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Statut 201', () => pm.response.to.have.status(201));",
+          "pm.test('Identifiant utilisateur sauvegardé', () => {",
+          "    const body = pm.response.json();",
+          "    pm.expect(body.id).to.be.a('number');",
+          "    pm.environment.set('user_id', body.id);",
+          "    pm.expect(pm.environment.get('user_email')).to.be.a('string');",
+          "});"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\",\n  \"firstName\": \"Newman\",\n  \"lastName\": \"Coach\",\n  \"role\": \"coach\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+      }
+    },
+    {
+      "name": "06 - Connexion du coach avant vérification e-mail (KO attendu)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 403 : compte non vérifié', () => pm.response.to.have.status(403));",
+        "pm.test('Message explicite', () => pm.expect(pm.response.json().message).to.include('confirmer'));"
+      ] } }]
+    },
+    {
+      "name": "07 - Admin : vérification du compte du coach (PUT /admin/users/{{user_id}})",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"isVerified\": true\n}" },
+        "url": { "raw": "{{base_url}}/admin/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["admin", "users", "{{user_id}}"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Compte vérifié avec le rôle coach', () => {",
+        "    const body = pm.response.json();",
+        "    pm.expect(body.id).to.eql(Number(pm.environment.get('user_id')));",
+        "    pm.expect(body.isVerified).to.be.true;",
+        "    pm.expect(body.roles).to.include('ROLE_COACH');",
+        "    pm.expect(body.email).to.eql(pm.environment.get('user_email'));",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "08 - Connexion du coach (identifiant sauvegardé → user_token)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Jeton du coach sauvegardé', () => {",
+        "    const token = pm.response.json().token;",
+        "    pm.expect(token).to.be.a('string').and.not.empty;",
+        "    pm.environment.set('user_token', token);",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "09 - Profil coach (liste nécessitant une connexion) + sauvegarde coach_id",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{user_token}}" }],
+        "url": { "raw": "{{base_url}}/coach/profile", "host": ["{{base_url}}"], "path": ["coach", "profile"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Profil du coach connecté (incomplet, non validé)', () => {",
+        "    const body = pm.response.json();",
+        "    pm.expect(body.userId).to.eql(Number(pm.environment.get('user_id')));",
+        "    pm.expect(body.isComplete).to.be.false;",
+        "    pm.expect(body.isValidated).to.be.false;",
+        "    pm.expect(body.sessions).to.be.an('array');",
+        "    pm.environment.set('coach_id', body.id);",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "10 - Mes réservations (liste nécessitant une connexion)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{user_token}}" }],
+        "url": { "raw": "{{base_url}}/bookings/me?scope=upcoming", "host": ["{{base_url}}"], "path": ["bookings", "me"], "query": [{ "key": "scope", "value": "upcoming" }] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Tableau vide pour un nouveau compte', () => pm.expect(pm.response.json()).to.be.an('array').that.is.empty);"
+      ] } }]
+    },
+    {
+      "name": "11 - Coach : compléter le profil professionnel",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{user_token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"specialty\": \"Natation\",\n  \"bio\": \"Coach créé par Newman.\",\n  \"hourlyRate\": 35,\n  \"city\": \"Lyon\"\n}" },
+        "url": { "raw": "{{base_url}}/coach/profile", "host": ["{{base_url}}"], "path": ["coach", "profile"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Profil complet', () => {",
+        "    const body = pm.response.json();",
+        "    pm.expect(body.isComplete).to.be.true;",
+        "    pm.expect(body.specialty).to.eql('Natation');",
+        "    pm.expect(body.hourlyRate).to.eql(35);",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "12 - Coach : définir les disponibilités (lundi → vendredi)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{user_token}}" }],
+        "body": { "mode": "raw", "raw": "[\n  { \"dayOfWeek\": 1, \"startsAt\": \"08:00\", \"endsAt\": \"20:00\" },\n  { \"dayOfWeek\": 2, \"startsAt\": \"08:00\", \"endsAt\": \"20:00\" },\n  { \"dayOfWeek\": 3, \"startsAt\": \"08:00\", \"endsAt\": \"20:00\" },\n  { \"dayOfWeek\": 4, \"startsAt\": \"08:00\", \"endsAt\": \"20:00\" },\n  { \"dayOfWeek\": 5, \"startsAt\": \"08:00\", \"endsAt\": \"20:00\" }\n]" },
+        "url": { "raw": "{{base_url}}/coach/availabilities", "host": ["{{base_url}}"], "path": ["coach", "availabilities"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('5 créneaux enregistrés', () => {",
+        "    const body = pm.response.json();",
+        "    pm.expect(body).to.be.an('array').with.lengthOf(5);",
+        "    pm.expect(body[0]).to.include({ dayOfWeek: 1, startsAt: '08:00', endsAt: '20:00' });",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "13 - Création d'une séance de sport (sauvegarde session_id)",
+      "event": [
+        { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+          "// Lundi prochain à 10h00 (dans les disponibilités définies à l'étape 12)",
+          "const d = new Date();",
+          "d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7));",
+          "d.setHours(10, 0, 0, 0);",
+          "pm.environment.set('session_start', d.toISOString());"
+        ] } },
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Statut 201', () => pm.response.to.have.status(201));",
+          "pm.test('Séance créée et id sauvegardé', () => {",
+          "    const body = pm.response.json();",
+          "    pm.expect(body.id).to.be.a('number');",
+          "    pm.expect(body.status).to.eql('planifiee');",
+          "    pm.expect(body.capacity).to.eql(2);",
+          "    pm.expect(body.remainingSeats).to.eql(2);",
+          "    pm.expect(body.coach.id).to.eql(Number(pm.environment.get('coach_id')));",
+          "    pm.environment.set('session_id', body.id);",
+          "});"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{user_token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"startAt\": \"{{session_start}}\",\n  \"durationMinutes\": 60,\n  \"location\": \"Piscine municipale, Lyon\",\n  \"capacity\": 2,\n  \"price\": 35\n}" },
+        "url": { "raw": "{{base_url}}/coach/sessions", "host": ["{{base_url}}"], "path": ["coach", "sessions"] }
+      }
+    },
+    {
+      "name": "14 - Modification de la séance créée (PUT /coach/sessions/{{session_id}})",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{user_token}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"startAt\": \"{{session_start}}\",\n  \"durationMinutes\": 90,\n  \"location\": \"Piscine municipale, Lyon - bassin 2\",\n  \"capacity\": 3,\n  \"price\": 40\n}" },
+        "url": { "raw": "{{base_url}}/coach/sessions/{{session_id}}", "host": ["{{base_url}}"], "path": ["coach", "sessions", "{{session_id}}"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 200', () => pm.response.to.have.status(200));",
+        "pm.test('Séance modifiée (même id, nouvelles valeurs)', () => {",
+        "    const body = pm.response.json();",
+        "    pm.expect(body.id).to.eql(Number(pm.environment.get('session_id')));",
+        "    pm.expect(body.capacity).to.eql(3);",
+        "    pm.expect(body.price).to.eql(40);",
+        "    pm.expect(body.location).to.include('bassin 2');",
+        "    const minutes = (new Date(body.endAt) - new Date(body.startAt)) / 60000;",
+        "    pm.expect(minutes).to.eql(90);",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "15 - Suppression de la séance créée (DELETE /coach/sessions/{{session_id}})",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{user_token}}" }],
+        "url": { "raw": "{{base_url}}/coach/sessions/{{session_id}}", "host": ["{{base_url}}"], "path": ["coach", "sessions", "{{session_id}}"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 204', () => pm.response.to.have.status(204));",
+        "pm.test('Variables de la séance supprimées', () => {",
+        "    pm.environment.unset('session_id');",
+        "    pm.environment.unset('session_start');",
+        "    pm.expect(pm.environment.has('session_id')).to.be.false;",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "16 - Vérification : la séance n'existe plus (GET /sessions/{id} → 404)",
+      "event": [
+        { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+          "// L'id a été retiré de l'environnement : on le garde en variable locale de la requête précédente via la collection",
+          "pm.variables.set('deleted_session_id', pm.collectionVariables.get('last_session_id') || '999999');"
+        ] } },
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Statut 404', () => pm.response.to.have.status(404));"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/sessions/{{deleted_session_id}}", "host": ["{{base_url}}"], "path": ["sessions", "{{deleted_session_id}}"] }
+      }
+    },
+    {
+      "name": "17 - Admin : suppression de l'utilisateur créé (DELETE /admin/users/{{user_id}})",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+        "url": { "raw": "{{base_url}}/admin/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["admin", "users", "{{user_id}}"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 204', () => pm.response.to.have.status(204));",
+        "pm.test('Variables de l\\'utilisateur supprimées', () => {",
+        "    pm.collectionVariables.set('deleted_user_id', pm.environment.get('user_id'));",
+        "    pm.environment.unset('user_id');",
+        "    pm.environment.unset('user_email');",
+        "    pm.environment.unset('user_token');",
+        "    pm.environment.unset('coach_id');",
+        "    pm.expect(pm.environment.has('user_id')).to.be.false;",
+        "    pm.expect(pm.environment.has('user_token')).to.be.false;",
+        "});"
+      ] } }]
+    },
+    {
+      "name": "18 - Vérification : l'utilisateur n'existe plus (GET /admin/users/{id} → 404)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+        "url": { "raw": "{{base_url}}/admin/users/{{deleted_user_id}}", "host": ["{{base_url}}"], "path": ["admin", "users", "{{deleted_user_id}}"] }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Statut 404', () => pm.response.to.have.status(404));",
+        "pm.test('Nettoyage final de l\\'environnement', () => {",
+        "    pm.environment.unset('admin_token');",
+        "    pm.collectionVariables.unset('deleted_user_id');",
+        "    pm.collectionVariables.unset('last_session_id');",
+        "    pm.expect(pm.environment.has('admin_token')).to.be.false;",
+        "});"
+      ] } }]
+    }
+  ],
+  "event": [
+    { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+      "// Mémorise l'id de séance au niveau collection pour la vérification post-suppression (étape 16)",
+      "if (pm.environment.has('session_id')) { pm.collectionVariables.set('last_session_id', pm.environment.get('session_id')); }"
+    ] } }
+  ],
+  "variable": [
+    { "key": "last_session_id", "value": "" },
+    { "key": "deleted_user_id", "value": "" }
+  ]
+}
