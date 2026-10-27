@@ -1,0 +1,181 @@
+@startuml mld
+' FitBook – MLD (modèle logique relationnel) : tables, clés primaires (PK) et étrangères (FK)
+skinparam linetype ortho
+skinparam nodesep 20
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #0F172A
+  HeaderBackgroundColor #F1F5F9
+  ArrowColor #0F172A
+}
+hide circle
+hide methods
+title FitBook – Modèle logique de données (MLD)
+
+entity "utilisateur" as utilisateur {
+  * <u>id</u> : INT
+  --
+  * email : VARCHAR(180) UNIQUE
+  * mot_de_passe : VARCHAR(255)
+  * nom : VARCHAR(100)
+  * prenom : VARCHAR(100)
+  telephone : VARCHAR(20)
+  avatar_url : VARCHAR(255)
+  * roles : JSON
+  * est_verifie : BOOLEAN
+  * est_actif : BOOLEAN
+  * date_creation : DATETIME
+}
+entity "coach" as coach {
+  * <u>id</u> : INT
+  --
+  * specialite : VARCHAR(100)
+  bio : TEXT
+  * tarif_horaire : DECIMAL(8,2)
+  ville : VARCHAR(100)
+  * est_valide : BOOLEAN
+  * #utilisateur_id : INT UNIQUE
+}
+entity "salle" as salle {
+  * <u>id</u> : INT
+  --
+  * nom : VARCHAR(150)
+  description : TEXT
+  * adresse : VARCHAR(255)
+  * ville : VARCHAR(100)
+  * code_postal : VARCHAR(10)
+  latitude : DECIMAL(9,6)
+  longitude : DECIMAL(9,6)
+  telephone : VARCHAR(20)
+  image_url : VARCHAR(255)
+  * capacite_totale : INT
+  * #gestionnaire_id : INT
+}
+entity "activite" as activite {
+  * <u>id</u> : INT
+  --
+  * nom : VARCHAR(100)
+  description : TEXT
+  icone : VARCHAR(100)
+}
+entity "cours" as cours {
+  * <u>id</u> : INT
+  --
+  * titre : VARCHAR(150)
+  description : TEXT
+  * niveau : ENUM
+  * duree_minutes : INT
+  * prix : DECIMAL(8,2)
+  * capacite : INT
+  image_url : VARCHAR(255)
+  * #salle_id : INT
+  * #activite_id : INT
+  #coach_id : INT (NULL)
+}
+entity "seance" as seance {
+  * <u>id</u> : INT
+  --
+  * date_debut : DATETIME
+  * date_fin : DATETIME
+  * capacite : INT
+  * prix : DECIMAL(8,2)
+  * statut : ENUM
+  lieu : VARCHAR(255)
+  #cours_id : INT (NULL)
+  #coach_id : INT (NULL)
+  CHECK (cours_id IS NULL) <> (coach_id IS NULL)
+}
+entity "horaire" as horaire {
+  * <u>id</u> : INT
+  --
+  * jour_semaine : TINYINT
+  * heure_ouverture : TIME
+  * heure_fermeture : TIME
+  * #salle_id : INT
+}
+entity "disponibilite" as disponibilite {
+  * <u>id</u> : INT
+  --
+  * jour_semaine : TINYINT
+  * heure_debut : TIME
+  * heure_fin : TIME
+  * #coach_id : INT
+}
+entity "reservation" as reservation {
+  * <u>id</u> : INT
+  --
+  * date_reservation : DATETIME
+  * statut : ENUM
+  * nb_places : INT
+  code_qr : VARCHAR(255)
+  * #utilisateur_id : INT
+  * #seance_id : INT
+  UNIQUE (utilisateur_id, seance_id)
+}
+entity "avis" as avis {
+  * <u>id</u> : INT
+  --
+  * note : TINYINT (1..5)
+  commentaire : TEXT
+  * date_avis : DATETIME
+  * statut_moderation : ENUM
+  * #auteur_id : INT
+  #salle_id : INT (NULL)
+  #coach_id : INT (NULL)
+  CHECK (salle_id IS NULL) <> (coach_id IS NULL)
+}
+entity "notification" as notification {
+  * <u>id</u> : INT
+  --
+  * type : VARCHAR(50)
+  * sujet : VARCHAR(255)
+  * contenu : TEXT
+  * date_envoi : DATETIME
+  * est_lue : BOOLEAN
+  * #utilisateur_id : INT
+  #reservation_id : INT (NULL)
+}
+entity "favori_salle" as favori_salle {
+  * <u>#utilisateur_id</u> : INT
+  * <u>#salle_id</u> : INT
+  --
+  * date_ajout : DATETIME
+}
+entity "favori_coach" as favori_coach {
+  * <u>#utilisateur_id</u> : INT
+  * <u>#coach_id</u> : INT
+  --
+  * date_ajout : DATETIME
+}
+
+utilisateur ||--o| coach
+utilisateur ||--o{ salle : gestionnaire_id
+utilisateur ||--o{ reservation
+utilisateur ||--o{ avis : auteur_id
+utilisateur ||--o{ notification
+utilisateur ||--o{ favori_salle
+salle ||--o{ favori_salle
+utilisateur ||--o{ favori_coach
+coach ||--o{ favori_coach
+
+salle ||--o{ cours
+activite ||--o{ cours
+coach |o--o{ cours
+salle ||--o{ horaire
+coach ||--o{ disponibilite
+
+cours |o--o{ seance
+coach |o--o{ seance
+seance ||--o{ reservation
+reservation |o--o{ notification
+
+salle |o--o{ avis
+coach |o--o{ avis
+
+legend right
+  <u>souligné</u> = clé primaire
+  ~# = clé étrangère
+  * = NOT NULL
+endlegend
+@enduml

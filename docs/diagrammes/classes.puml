@@ -1,0 +1,198 @@
+@startuml classes
+' FitBook – Diagramme de classes (entités Doctrine)
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #0F172A
+  ArrowColor #0F172A
+  HeaderBackgroundColor #FFF4EA
+}
+skinparam enum {
+  BackgroundColor #F1F5F9
+  BorderColor #64748B
+}
+title FitBook – Diagramme de classes
+
+enum Role {
+  ROLE_USER
+  ROLE_COACH
+  ROLE_MANAGER
+  ROLE_ADMIN
+}
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+enum SessionStatus {
+  PLANNED
+  FULL
+  CANCELLED
+  COMPLETED
+}
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
+class User {
+  - id : int
+  - email : string
+  - password : string
+  - firstName : string
+  - lastName : string
+  - phone : string
+  - avatarUrl : string
+  - roles : Role[]
+  - isVerified : bool
+  - isActive : bool
+  - createdAt : DateTime
+  + hasRole(role : Role) : bool
+  + verifyEmail() : void
+}
+
+class Coach {
+  - id : int
+  - speciality : string
+  - bio : text
+  - hourlyRate : decimal
+  - city : string
+  - isValidated : bool
+  + getAverageRating() : float
+}
+
+class Gym {
+  - id : int
+  - name : string
+  - description : text
+  - address : string
+  - city : string
+  - postalCode : string
+  - latitude : float
+  - longitude : float
+  - phone : string
+  - imageUrl : string
+  - totalCapacity : int
+  + getAverageRating() : float
+  + isOpenAt(date : DateTime) : bool
+}
+
+class Activity {
+  - id : int
+  - name : string
+  - description : text
+  - icon : string
+}
+
+class Course {
+  - id : int
+  - title : string
+  - description : text
+  - level : Level
+  - durationMinutes : int
+  - price : decimal
+  - capacity : int
+  - imageUrl : string
+}
+
+class Session {
+  - id : int
+  - startAt : DateTime
+  - endAt : DateTime
+  - capacity : int
+  - price : decimal
+  - status : SessionStatus
+  - location : string
+  + getRemainingSeats() : int
+  + isBookable() : bool
+  + cancel() : void
+}
+
+class OpeningHour {
+  - id : int
+  - dayOfWeek : int
+  - opensAt : Time
+  - closesAt : Time
+}
+
+class Availability {
+  - id : int
+  - dayOfWeek : int
+  - startAt : Time
+  - endAt : Time
+}
+
+class Booking {
+  - id : int
+  - bookedAt : DateTime
+  - status : BookingStatus
+  - seats : int
+  - qrCode : string
+  + canBeCancelled() : bool
+  + cancel() : void
+}
+
+class Review {
+  - id : int
+  - rating : int
+  - comment : text
+  - createdAt : DateTime
+  - moderationStatus : ReviewStatus
+}
+
+class Notification {
+  - id : int
+  - type : string
+  - subject : string
+  - content : text
+  - sentAt : DateTime
+  - isRead : bool
+}
+
+User "1" -- "0..1" Coach : est >
+User "1" -- "0..*" Gym : gère >
+User "1" -- "0..*" Booking : effectue >
+User "1" -- "0..*" Review : rédige >
+User "1" -- "0..*" Notification : reçoit >
+User "0..*" -- "0..*" Gym : favoris >
+User "0..*" -- "0..*" Coach : favoris >
+
+Gym "1" *-- "0..*" Course : propose
+Gym "1" *-- "0..*" OpeningHour : ouvre
+Activity "1" -- "0..*" Course : catégorise >
+Coach "0..1" -- "0..*" Course : anime >
+Coach "1" *-- "0..*" Availability : déclare
+
+Course "0..1" -- "0..*" Session : planifie >
+Coach "0..1" -- "0..*" Session : donne >
+Session "1" -- "0..*" Booking : concerne <
+Booking "0..1" -- "0..*" Notification : déclenche >
+
+Gym "0..1" -- "0..*" Review : reçoit <
+Coach "0..1" -- "0..*" Review : reçoit <
+
+User ..> Role
+Course ..> Level
+Session ..> SessionStatus
+Booking ..> BookingStatus
+Review ..> ReviewStatus
+
+note bottom of Session
+  Contrainte XOR : une séance est liée
+  soit à un cours (séance collective),
+  soit à un coach (séance privée).
+end note
+
+note bottom of Review
+  Contrainte XOR : un avis cible
+  soit une salle, soit un coach.
+  Un seul avis par auteur et par cible.
+end note
+@enduml

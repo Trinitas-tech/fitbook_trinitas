@@ -1,0 +1,130 @@
+@startuml use-cases
+' FitBook – Diagramme de cas d'utilisation (fonctionnalités principales)
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 40
+skinparam usecase {
+  BackgroundColor #FFF4EA
+  BorderColor #C2410C
+  ArrowColor #0F172A
+}
+skinparam rectangle {
+  BackgroundColor #F8FAFC
+  BorderColor #94A3B8
+}
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #CBD5E1
+}
+title FitBook – Diagramme de cas d'utilisation (fonctionnalités principales)
+
+actor "Visiteur" as V
+actor "Sportif" as S
+actor "Coach" as C
+actor "Gestionnaire\nde salle" as G
+actor "Administrateur" as A
+
+rectangle "FitBook" {
+
+  package "Compte" {
+    usecase "S'inscrire" as UC1
+    usecase "Confirmer son\nadresse e-mail" as UC1b
+    usecase "Se connecter" as UC2
+    usecase "Gérer son profil" as UC9
+  }
+
+  package "Recherche et consultation" {
+    usecase "Rechercher des salles,\ncours et coachs" as UC3
+    usecase "Filtrer les résultats\n(ville, activité, prix, date, note)" as UC3b
+    usecase "Consulter une fiche\n(salle, cours ou coach)" as UC4
+    usecase "Ajouter aux favoris" as UC7
+    usecase "Publier un avis\net une note" as UC8
+  }
+
+  package "Réservation" {
+    usecase "Réserver une séance" as UC5
+    usecase "Contrôler la capacité\nde la séance" as UC5b
+    usecase "Envoyer l'e-mail\nde confirmation" as UC5c
+    usecase "Annuler sa réservation" as UC6
+  }
+
+  package "Espace coach" {
+    usecase "Gérer ses séances\n(créer, modifier, supprimer)" as UC10
+    usecase "Définir ses disponibilités" as UC11
+    usecase "Consulter ses réservations\net ses avis reçus" as UC12
+  }
+
+  package "Espace gestionnaire" {
+    usecase "Gérer sa salle, ses horaires\net ses cours" as UC13
+    usecase "Planifier les séances\nd'un cours" as UC14
+    usecase "Annuler une séance" as UC15
+    usecase "Notifier les sportifs inscrits" as UC15b
+  }
+
+  package "Administration" {
+    usecase "Administrer les utilisateurs\net le catalogue" as UC16
+    usecase "Gérer les réservations" as UC17
+    usecase "Modérer les avis" as UC18
+  }
+}
+
+actor "Serveur\nd'e-mails" as M <<système>>
+
+' Généralisation : un sportif, un coach, un gestionnaire et un admin
+' peuvent faire tout ce qu'un visiteur peut faire.
+S --|> V
+C --|> V
+G --|> V
+A --|> V
+
+V --> UC1
+V --> UC2
+V --> UC3
+V --> UC4
+
+S --> UC9
+S --> UC5
+S --> UC6
+S --> UC7
+S --> UC8
+
+C --> UC9
+C --> UC10
+C --> UC11
+C --> UC12
+
+G --> UC9
+G --> UC13
+G --> UC14
+G --> UC15
+G --> UC12
+
+A --> UC16
+A --> UC17
+A --> UC18
+
+' Relations <<include>> : comportement obligatoire
+UC1 ..> UC1b : <<include>>
+UC5 ..> UC5b : <<include>>
+UC5 ..> UC5c : <<include>>
+UC15 ..> UC15b : <<include>>
+
+' Relations <<extend>> : comportement optionnel ou conditionnel
+UC3b ..> UC3 : <<extend>>
+UC7 ..> UC4 : <<extend>>
+UC8 ..> UC4 : <<extend>>
+UC6 ..> UC5 : <<extend>>
+
+note bottom of UC8
+  Condition d'extension :
+  réservation terminée
+  pour cette salle / ce coach
+end note
+
+UC1b --> M
+UC5c --> M
+UC15b --> M
+@enduml

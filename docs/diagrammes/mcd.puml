@@ -1,0 +1,184 @@
+@startuml mcd
+allowmixing
+' FitBook – MCD (Merise) : entités rectangulaires, associations en ovale, cardinalités (min,max)
+skinparam linetype ortho
+skinparam nodesep 20
+skinparam ranksep 50
+skinparam defaultTextAlignment center
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #0F172A
+  HeaderBackgroundColor #FFF4EA
+  ArrowColor #0F172A
+}
+skinparam usecase {
+  BackgroundColor #FFEDD5
+  BorderColor #C2410C
+}
+hide circle
+hide methods
+hide stereotype
+title FitBook – Modèle conceptuel de données (MCD Merise)
+
+class UTILISATEUR {
+  <u>id</u>
+  email
+  mot_de_passe
+  nom
+  prenom
+  telephone
+  avatar_url
+  roles
+  est_verifie
+  est_actif
+  date_creation
+}
+class COACH {
+  <u>id</u>
+  specialite
+  bio
+  tarif_horaire
+  ville
+  est_valide
+}
+class SALLE {
+  <u>id</u>
+  nom
+  description
+  adresse
+  ville
+  code_postal
+  latitude
+  longitude
+  telephone
+  image_url
+  capacite_totale
+}
+class ACTIVITE {
+  <u>id</u>
+  nom
+  description
+  icone
+}
+class COURS {
+  <u>id</u>
+  titre
+  description
+  niveau
+  duree_minutes
+  prix
+  capacite
+  image_url
+}
+class SEANCE {
+  <u>id</u>
+  date_debut
+  date_fin
+  capacite
+  prix
+  statut
+  lieu
+}
+class HORAIRE {
+  <u>id</u>
+  jour_semaine
+  heure_ouverture
+  heure_fermeture
+}
+class DISPONIBILITE {
+  <u>id</u>
+  jour_semaine
+  heure_debut
+  heure_fin
+}
+class RESERVATION {
+  <u>id</u>
+  date_reservation
+  statut
+  nb_places
+  code_qr
+}
+class AVIS {
+  <u>id</u>
+  note
+  commentaire
+  date_avis
+  statut_moderation
+}
+class NOTIFICATION {
+  <u>id</u>
+  type
+  sujet
+  contenu
+  date_envoi
+  est_lue
+}
+
+usecase "EST" as A1
+usecase "GERE" as A2
+usecase "EFFECTUE" as A3
+usecase "REDIGE" as A4
+usecase "RECOIT_NOTIF" as A5
+usecase "FAVORI_SALLE\n--\ndate_ajout" as A6
+usecase "FAVORI_COACH\n--\ndate_ajout" as A7
+usecase "PROPOSE" as A8
+usecase "OUVRE" as A9
+usecase "CATEGORISE" as A10
+usecase "ANIME" as A11
+usecase "DECLARE" as A12
+usecase "PLANIFIE" as A13
+usecase "DONNE" as A14
+usecase "CONCERNE" as A15
+usecase "DECLENCHE" as A16
+usecase "NOTE_SALLE" as A17
+usecase "NOTE_COACH" as A18
+
+UTILISATEUR "0,1" -- A1
+A1 -- "1,1" COACH
+UTILISATEUR "0,N" -- A2
+A2 -- "1,1" SALLE
+UTILISATEUR "0,N" -- A3
+A3 -- "1,1" RESERVATION
+UTILISATEUR "0,N" -- A4
+A4 -- "1,1" AVIS
+UTILISATEUR "0,N" -- A5
+A5 -- "1,1" NOTIFICATION
+UTILISATEUR "0,N" -- A6
+A6 -- "0,N" SALLE
+UTILISATEUR "0,N" -- A7
+A7 -- "0,N" COACH
+
+SALLE "0,N" -- A8
+A8 -- "1,1" COURS
+SALLE "0,N" -- A9
+A9 -- "1,1" HORAIRE
+ACTIVITE "0,N" -- A10
+A10 -- "1,1" COURS
+COACH "0,N" -- A11
+A11 -- "0,1" COURS
+COACH "0,N" -- A12
+A12 -- "1,1" DISPONIBILITE
+
+COURS "0,N" -- A13
+A13 -- "0,1" SEANCE
+COACH "0,N" -- A14
+A14 -- "0,1" SEANCE
+SEANCE "0,N" -- A15
+A15 -- "1,1" RESERVATION
+RESERVATION "0,N" -- A16
+A16 -- "0,1" NOTIFICATION
+
+SALLE "0,N" -- A17
+A17 -- "0,1" AVIS
+COACH "0,N" -- A18
+A18 -- "0,1" AVIS
+
+note bottom of SEANCE
+  Contrainte XOR (PLANIFIE, DONNE) :
+  une séance est liée à un cours OU à un coach.
+end note
+note bottom of AVIS
+  Contrainte XOR (NOTE_SALLE, NOTE_COACH) :
+  un avis cible une salle OU un coach.
+end note
+@enduml
