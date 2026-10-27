@@ -1,0 +1,7 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}Réservation annulée{% endblock %}
+{% block body %}
+<h2 style="margin-top:0;">Réservation annulée</h2>
+<p>Bonjour {{ booking.user.firstName }}, votre réservation pour <strong>{{ session.title }}</strong> du {{ session.startAt|date('d/m/Y à H:i') }} a été annulée{% if bySystem %} par la plateforme{% endif %}.</p>
+<p>Votre place a été libérée. Retrouvez d'autres séances sur <a href="{{ frontendUrl }}/recherche" style="color:#F97316;">FitBook</a>.</p>
+{% endblock %}

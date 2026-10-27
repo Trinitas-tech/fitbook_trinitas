@@ -1,0 +1,7 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}Séance annulée{% endblock %}
+{% block body %}
+<h2 style="margin-top:0;">Séance annulée</h2>
+<p>Bonjour {{ booking.user.firstName }}, nous sommes désolés : la séance <strong>{{ session.title }}</strong> prévue le {{ session.startAt|date('d/m/Y à H:i') }} a été annulée par l'organisateur.</p>
+<p>Votre réservation est automatiquement annulée. Retrouvez d'autres séances sur <a href="{{ frontendUrl }}/recherche" style="color:#F97316;">FitBook</a>.</p>
+{% endblock %}
