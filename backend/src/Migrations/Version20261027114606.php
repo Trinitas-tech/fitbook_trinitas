@@ -1,0 +1,95 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Migrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20261027114606 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return '';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql('CREATE TABLE activite (id INT AUTO_INCREMENT NOT NULL, nom VARCHAR(100) NOT NULL, description LONGTEXT DEFAULT NULL, icone VARCHAR(100) DEFAULT NULL, UNIQUE INDEX uniq_activite_nom (nom), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE avis (id INT AUTO_INCREMENT NOT NULL, rating SMALLINT NOT NULL, commentaire LONGTEXT DEFAULT NULL, date_avis DATETIME NOT NULL, statut_moderation VARCHAR(20) NOT NULL, auteur_id INT NOT NULL, salle_id INT DEFAULT NULL, coach_id INT DEFAULT NULL, UNIQUE INDEX uniq_avis_auteur_salle (auteur_id, salle_id), UNIQUE INDEX uniq_avis_auteur_coach (auteur_id, coach_id), INDEX IDX_8F91ABF060BB6FE6 (auteur_id), INDEX IDX_8F91ABF0DC304035 (salle_id), INDEX IDX_8F91ABF03C105691 (coach_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE coach (id INT AUTO_INCREMENT NOT NULL, specialite VARCHAR(100) DEFAULT NULL, bio LONGTEXT DEFAULT NULL, tarif_horaire NUMERIC(8, 2) DEFAULT NULL, ville VARCHAR(100) DEFAULT NULL, est_valide TINYINT NOT NULL, utilisateur_id INT NOT NULL, UNIQUE INDEX UNIQ_3F596DCCFB88E14F (utilisateur_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE cours (id INT AUTO_INCREMENT NOT NULL, titre VARCHAR(150) NOT NULL, description LONGTEXT DEFAULT NULL, niveau VARCHAR(20) NOT NULL, duree_minutes INT NOT NULL, prix NUMERIC(8, 2) NOT NULL, capacite INT NOT NULL, image_url VARCHAR(255) DEFAULT NULL, salle_id INT NOT NULL, activite_id INT NOT NULL, coach_id INT DEFAULT NULL, INDEX IDX_FDCA8C9CDC304035 (salle_id), INDEX IDX_FDCA8C9C9B0F88B1 (activite_id), INDEX IDX_FDCA8C9C3C105691 (coach_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE disponibilite (id INT AUTO_INCREMENT NOT NULL, jour_semaine SMALLINT NOT NULL, heure_debut TIME NOT NULL, heure_fin TIME NOT NULL, coach_id INT NOT NULL, INDEX IDX_2CBACE2F3C105691 (coach_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE favori_coach (date_ajout DATETIME NOT NULL, utilisateur_id INT NOT NULL, coach_id INT NOT NULL, INDEX IDX_A19542FDFB88E14F (utilisateur_id), INDEX IDX_A19542FD3C105691 (coach_id), PRIMARY KEY (utilisateur_id, coach_id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE favori_salle (date_ajout DATETIME NOT NULL, utilisateur_id INT NOT NULL, salle_id INT NOT NULL, INDEX IDX_D05B516DFB88E14F (utilisateur_id), INDEX IDX_D05B516DDC304035 (salle_id), PRIMARY KEY (utilisateur_id, salle_id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE horaire (id INT AUTO_INCREMENT NOT NULL, jour_semaine SMALLINT NOT NULL, heure_ouverture TIME NOT NULL, heure_fermeture TIME NOT NULL, salle_id INT NOT NULL, UNIQUE INDEX uniq_horaire_salle_jour (salle_id, jour_semaine), INDEX IDX_BBC83DB6DC304035 (salle_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE notification (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(50) NOT NULL, sujet VARCHAR(255) NOT NULL, contenu LONGTEXT NOT NULL, date_envoi DATETIME NOT NULL, est_lue TINYINT NOT NULL, utilisateur_id INT NOT NULL, reservation_id INT DEFAULT NULL, INDEX IDX_BF5476CAFB88E14F (utilisateur_id), INDEX IDX_BF5476CAB83297E7 (reservation_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE reservation (id INT AUTO_INCREMENT NOT NULL, date_reservation DATETIME NOT NULL, statut VARCHAR(20) NOT NULL, nb_places INT NOT NULL, code_qr VARCHAR(255) DEFAULT NULL, utilisateur_id INT NOT NULL, seance_id INT NOT NULL, UNIQUE INDEX uniq_reservation_utilisateur_seance (utilisateur_id, seance_id), INDEX IDX_42C84955FB88E14F (utilisateur_id), INDEX IDX_42C84955E3797A94 (seance_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE salle (id INT AUTO_INCREMENT NOT NULL, nom VARCHAR(150) NOT NULL, description LONGTEXT DEFAULT NULL, adresse VARCHAR(255) NOT NULL, ville VARCHAR(100) NOT NULL, code_postal VARCHAR(10) NOT NULL, latitude NUMERIC(9, 6) DEFAULT NULL, longitude NUMERIC(9, 6) DEFAULT NULL, telephone VARCHAR(20) DEFAULT NULL, image_url VARCHAR(255) DEFAULT NULL, capacite_totale INT NOT NULL, gestionnaire_id INT NOT NULL, INDEX IDX_4E977E5C6885AC1B (gestionnaire_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE seance (id INT AUTO_INCREMENT NOT NULL, date_debut DATETIME NOT NULL, date_fin DATETIME NOT NULL, capacite INT NOT NULL, prix NUMERIC(8, 2) NOT NULL, statut VARCHAR(20) NOT NULL, lieu VARCHAR(255) DEFAULT NULL, cours_id INT DEFAULT NULL, coach_id INT DEFAULT NULL, INDEX idx_seance_date_debut (date_debut), INDEX IDX_DF7DFD0E7ECF78B0 (cours_id), INDEX IDX_DF7DFD0E3C105691 (coach_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE utilisateur (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, mot_de_passe VARCHAR(255) NOT NULL, nom VARCHAR(100) NOT NULL, prenom VARCHAR(100) NOT NULL, telephone VARCHAR(20) DEFAULT NULL, avatar_url VARCHAR(255) DEFAULT NULL, roles JSON NOT NULL, est_verifie TINYINT NOT NULL, est_actif TINYINT NOT NULL, date_creation DATETIME NOT NULL, token_verification VARCHAR(64) DEFAULT NULL, token_verification_expire DATETIME DEFAULT NULL, token_reset VARCHAR(64) DEFAULT NULL, token_reset_expire DATETIME DEFAULT NULL, UNIQUE INDEX uniq_utilisateur_email (email), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 ENGINE = InnoDB');
+        $this->addSql('ALTER TABLE avis ADD CONSTRAINT FK_8F91ABF060BB6FE6 FOREIGN KEY (auteur_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE avis ADD CONSTRAINT FK_8F91ABF0DC304035 FOREIGN KEY (salle_id) REFERENCES salle (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE avis ADD CONSTRAINT FK_8F91ABF03C105691 FOREIGN KEY (coach_id) REFERENCES coach (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE coach ADD CONSTRAINT FK_3F596DCCFB88E14F FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE cours ADD CONSTRAINT FK_FDCA8C9CDC304035 FOREIGN KEY (salle_id) REFERENCES salle (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE cours ADD CONSTRAINT FK_FDCA8C9C9B0F88B1 FOREIGN KEY (activite_id) REFERENCES activite (id)');
+        $this->addSql('ALTER TABLE cours ADD CONSTRAINT FK_FDCA8C9C3C105691 FOREIGN KEY (coach_id) REFERENCES coach (id) ON DELETE SET NULL');
+        $this->addSql('ALTER TABLE disponibilite ADD CONSTRAINT FK_2CBACE2F3C105691 FOREIGN KEY (coach_id) REFERENCES coach (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE favori_coach ADD CONSTRAINT FK_A19542FDFB88E14F FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE favori_coach ADD CONSTRAINT FK_A19542FD3C105691 FOREIGN KEY (coach_id) REFERENCES coach (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE favori_salle ADD CONSTRAINT FK_D05B516DFB88E14F FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE favori_salle ADD CONSTRAINT FK_D05B516DDC304035 FOREIGN KEY (salle_id) REFERENCES salle (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE horaire ADD CONSTRAINT FK_BBC83DB6DC304035 FOREIGN KEY (salle_id) REFERENCES salle (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE notification ADD CONSTRAINT FK_BF5476CAFB88E14F FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE notification ADD CONSTRAINT FK_BF5476CAB83297E7 FOREIGN KEY (reservation_id) REFERENCES reservation (id) ON DELETE SET NULL');
+        $this->addSql('ALTER TABLE reservation ADD CONSTRAINT FK_42C84955FB88E14F FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE reservation ADD CONSTRAINT FK_42C84955E3797A94 FOREIGN KEY (seance_id) REFERENCES seance (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE salle ADD CONSTRAINT FK_4E977E5C6885AC1B FOREIGN KEY (gestionnaire_id) REFERENCES utilisateur (id)');
+        $this->addSql('ALTER TABLE seance ADD CONSTRAINT FK_DF7DFD0E7ECF78B0 FOREIGN KEY (cours_id) REFERENCES cours (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE seance ADD CONSTRAINT FK_DF7DFD0E3C105691 FOREIGN KEY (coach_id) REFERENCES coach (id) ON DELETE CASCADE');
+    }
+
+    public function down(Schema $schema): void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE avis DROP FOREIGN KEY FK_8F91ABF060BB6FE6');
+        $this->addSql('ALTER TABLE avis DROP FOREIGN KEY FK_8F91ABF0DC304035');
+        $this->addSql('ALTER TABLE avis DROP FOREIGN KEY FK_8F91ABF03C105691');
+        $this->addSql('ALTER TABLE coach DROP FOREIGN KEY FK_3F596DCCFB88E14F');
+        $this->addSql('ALTER TABLE cours DROP FOREIGN KEY FK_FDCA8C9CDC304035');
+        $this->addSql('ALTER TABLE cours DROP FOREIGN KEY FK_FDCA8C9C9B0F88B1');
+        $this->addSql('ALTER TABLE cours DROP FOREIGN KEY FK_FDCA8C9C3C105691');
+        $this->addSql('ALTER TABLE disponibilite DROP FOREIGN KEY FK_2CBACE2F3C105691');
+        $this->addSql('ALTER TABLE favori_coach DROP FOREIGN KEY FK_A19542FDFB88E14F');
+        $this->addSql('ALTER TABLE favori_coach DROP FOREIGN KEY FK_A19542FD3C105691');
+        $this->addSql('ALTER TABLE favori_salle DROP FOREIGN KEY FK_D05B516DFB88E14F');
+        $this->addSql('ALTER TABLE favori_salle DROP FOREIGN KEY FK_D05B516DDC304035');
+        $this->addSql('ALTER TABLE horaire DROP FOREIGN KEY FK_BBC83DB6DC304035');
+        $this->addSql('ALTER TABLE notification DROP FOREIGN KEY FK_BF5476CAFB88E14F');
+        $this->addSql('ALTER TABLE notification DROP FOREIGN KEY FK_BF5476CAB83297E7');
+        $this->addSql('ALTER TABLE reservation DROP FOREIGN KEY FK_42C84955FB88E14F');
+        $this->addSql('ALTER TABLE reservation DROP FOREIGN KEY FK_42C84955E3797A94');
+        $this->addSql('ALTER TABLE salle DROP FOREIGN KEY FK_4E977E5C6885AC1B');
+        $this->addSql('ALTER TABLE seance DROP FOREIGN KEY FK_DF7DFD0E7ECF78B0');
+        $this->addSql('ALTER TABLE seance DROP FOREIGN KEY FK_DF7DFD0E3C105691');
+        $this->addSql('DROP TABLE activite');
+        $this->addSql('DROP TABLE avis');
+        $this->addSql('DROP TABLE coach');
+        $this->addSql('DROP TABLE cours');
+        $this->addSql('DROP TABLE disponibilite');
+        $this->addSql('DROP TABLE favori_coach');
+        $this->addSql('DROP TABLE favori_salle');
+        $this->addSql('DROP TABLE horaire');
+        $this->addSql('DROP TABLE notification');
+        $this->addSql('DROP TABLE reservation');
+        $this->addSql('DROP TABLE salle');
+        $this->addSql('DROP TABLE seance');
+        $this->addSql('DROP TABLE utilisateur');
+    }
+}

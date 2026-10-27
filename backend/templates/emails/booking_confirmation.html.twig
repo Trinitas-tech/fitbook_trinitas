@@ -1,0 +1,16 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}Réservation confirmée{% endblock %}
+{% block body %}
+<h2 style="margin-top:0;">Votre réservation est confirmée</h2>
+<p>Bonjour {{ booking.user.firstName }}, votre place est réservée pour :</p>
+<table cellpadding="6" style="background:#F8FAFC;border-radius:8px;width:100%;">
+  <tr><td><strong>Séance</strong></td><td>{{ session.title }}</td></tr>
+  <tr><td><strong>Date</strong></td><td>{{ session.startAt|date('d/m/Y') }} de {{ session.startAt|date('H:i') }} à {{ session.endAt|date('H:i') }}</td></tr>
+  {% if session.gym %}<tr><td><strong>Lieu</strong></td><td>{{ session.gym.name }}, {{ session.gym.address }}, {{ session.gym.city }}</td></tr>
+  {% elseif session.location %}<tr><td><strong>Lieu</strong></td><td>{{ session.location }}</td></tr>{% endif %}
+  <tr><td><strong>Places</strong></td><td>{{ booking.seats }}</td></tr>
+  <tr><td><strong>Prix</strong></td><td>{{ session.price|number_format(2, ',', ' ') }} €</td></tr>
+  <tr><td><strong>Code</strong></td><td>{{ booking.qrCode }}</td></tr>
+</table>
+<p>Vous pouvez annuler jusqu'à 2 heures avant le début depuis <a href="{{ frontendUrl }}/mes-reservations" style="color:#F97316;">vos réservations</a>.</p>
+{% endblock %}

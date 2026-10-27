@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>{% block title %}FitBook{% endblock %}</title></head>
+<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,Arial,sans-serif;color:#0F172A;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F8FAFC;padding:24px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0F172A;padding:20px 32px;color:#ffffff;font-size:22px;font-weight:bold;">Fit<span style="color:#F97316;">Book</span></td></tr>
+      <tr><td style="padding:32px;font-size:15px;line-height:1.6;">
+        {% block body %}{% endblock %}
+      </td></tr>
+      <tr><td style="padding:16px 32px;font-size:12px;color:#64748B;border-top:1px solid #E2E8F0;">
+        FitBook – plateforme de réservation de salles, de cours et de coachs sportifs.<br>
+        Cet e-mail a été envoyé automatiquement, merci de ne pas y répondre.
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

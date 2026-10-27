@@ -1,0 +1,10 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}Confirmez votre adresse e-mail{% endblock %}
+{% block body %}
+<h2 style="margin-top:0;">Bienvenue {{ user.firstName }} !</h2>
+<p>Merci de votre inscription sur FitBook. Pour activer votre compte, confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous. Ce lien est valable <strong>24 heures</strong>.</p>
+<p style="text-align:center;margin:32px 0;">
+  <a href="{{ url }}" style="background:#F97316;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:bold;display:inline-block;">Confirmer mon adresse</a>
+</p>
+<p style="font-size:13px;color:#64748B;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>{{ url }}</p>
+{% endblock %}
