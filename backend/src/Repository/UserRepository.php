@@ -26,6 +26,31 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Inscriptions par mois sur les N derniers mois (US-54).
+     *
+     * @return array<string, int> clé = "AAAA-MM"
+     */
+    public function countRegistrationsByMonth(int $months = 6): array
+    {
+        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0)->modify(sprintf('-%d months', $months - 1));
+        $out = [];
+        for ($i = 0; $i < $months; ++$i) {
+            $out[$start->modify("+$i months")->format('Y-m')] = 0;
+        }
+        $rows = $this->createQueryBuilder('u')->select('u.createdAt AS createdAt')
+            ->andWhere('u.createdAt >= :start')->setParameter('start', $start)
+            ->getQuery()->getArrayResult();
+        foreach ($rows as $row) {
+            $key = $row['createdAt']->format('Y-m');
+            if (isset($out[$key])) {
+                ++$out[$key];
+            }
+        }
+
+        return $out;
+    }
+
     /** @return array{items: User[], total: int} */
     public function searchPaginated(?string $q, ?string $role, int $page, int $limit): array
     {

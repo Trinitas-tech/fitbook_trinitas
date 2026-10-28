@@ -18,7 +18,10 @@ use Symfony\Bundle\SecurityBundle\Security;
  */
 class Presenter
 {
-    public function __construct(private readonly Security $security)
+    private ?float $userLat = null;
+    private ?float $userLng = null;
+
+    public function __construct(private readonly Security $security, private readonly QrCodeGenerator $qrCodes)
     {
     }
 
@@ -81,7 +84,17 @@ class Presenter
             'reviewCount' => \count($g->getApprovedReviews()),
             'activities' => array_keys($activities),
             'isFavorite' => $me ? $me->hasFavoriteGym($g) : false,
+            'latitude' => $g->getLatitude() !== null ? (float) $g->getLatitude() : null,
+            'longitude' => $g->getLongitude() !== null ? (float) $g->getLongitude() : null,
+            'distanceKm' => $this->userLat !== null && $this->userLng !== null ? $g->distanceTo($this->userLat, $this->userLng) : null,
         ];
+    }
+
+    /** Position du visiteur (query params lat/lng) pour le calcul de distanceKm (US-21). */
+    public function setUserPosition(?float $lat, ?float $lng): void
+    {
+        $this->userLat = $lat;
+        $this->userLng = $lng;
     }
 
     /** @return array<string, mixed> */
@@ -215,7 +228,7 @@ class Presenter
     }
 
     /** @return array<string, mixed> */
-    public function booking(Booking $b, bool $withUser = false): array
+    public function booking(Booking $b, bool $withUser = false, bool $withQrImage = false): array
     {
         $data = [
             'id' => $b->getId(),
@@ -226,6 +239,10 @@ class Presenter
             'session' => $this->session($b->getSession()),
             'canBeCancelled' => $b->canBeCancelled(),
         ];
+        if ($withQrImage && $b->getQrCode() !== null && $b->getStatus() === BookingStatus::CONFIRMEE) {
+            // US-22 : image SVG du QR code à présenter à l'entrée
+            $data['qrCodeDataUri'] = $this->qrCodes->svgDataUri($b->getQrCode());
+        }
         if ($withUser) {
             $u = $b->getUser();
             $data['user'] = $this->userShort($u) + ['email' => $u->getEmail()];

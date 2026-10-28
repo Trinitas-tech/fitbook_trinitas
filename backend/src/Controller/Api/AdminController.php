@@ -298,6 +298,12 @@ class AdminController extends AbstractApiController
             'cancelledBookings' => $this->bookings->countAll(BookingStatus::ANNULEE),
             'pendingReviews' => $this->reviews->count(['status' => ReviewStatus::EN_ATTENTE]),
             'fillRate' => $cap > 0 ? round($booked / $cap * 100) : 0,
+            // US-54 : séries pour les graphiques
+            'registrationsByMonth' => array_map(static fn (string $m, int $n) => ['month' => $m, 'count' => $n], array_keys($registrations = $this->users->countRegistrationsByMonth()), $registrations),
+            'bookingsByMonth' => array_map(static fn (string $m, array $v) => ['month' => $m, 'confirmed' => $v['confirmed'], 'cancelled' => $v['cancelled']], array_keys($byMonth = $this->bookings->countByMonth()), $byMonth),
+            'bookingsByStatus' => $this->bookings->countByStatus(),
+            'topActivities' => $this->bookings->topActivities(),
+            'topGyms' => $this->bookings->topGyms(),
         ]);
     }
 }
