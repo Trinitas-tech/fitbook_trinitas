@@ -804,3 +804,89 @@ select.input {
     padding: 20px;
   }
 }
+
+/* ---------- Carte Leaflet (US-21) : marqueurs et popups maison ---------- */
+.fb-pin-wrap {
+  background: none;
+  border: none;
+}
+
+.fb-pin {
+  display: block;
+  width: 28px;
+  height: 28px;
+  background: var(--color-primary);
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.35);
+}
+
+.fb-pin::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.fb-pin-user {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-info);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25), 0 2px 6px rgba(15, 23, 42, 0.3);
+  animation: fb-pulse 1.8s ease-out infinite;
+}
+
+@keyframes fb-pulse {
+  0% {
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.35), 0 2px 6px rgba(15, 23, 42, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(37, 99, 235, 0), 0 2px 6px rgba(15, 23, 42, 0.3);
+  }
+}
+
+.leaflet-container {
+  font-family: var(--font);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px;
+  line-height: 1.4;
+}
+
+.fb-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+
+.fb-popup-title {
+  font-size: 1rem;
+  color: var(--color-dark);
+}
+
+.fb-popup-city,
+.fb-popup-rating {
+  color: var(--color-text-muted);
+}
+
+.fb-popup-distance {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.fb-popup-link {
+  margin-top: 6px;
+  font-weight: 600;
+}

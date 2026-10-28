@@ -9,6 +9,7 @@ import {
   CoachProfilePayload,
   CoachReviews,
   CoachSessionPayload,
+  CoachStats,
   Session,
   SessionParticipant,
 } from '../models';
@@ -64,5 +65,10 @@ export class CoachService {
 
   reviews(): Observable<CoachReviews> {
     return this.http.get<CoachReviews>(`${this.base}/reviews`);
+  }
+
+  /** US-36 : statistiques du tableau de bord coach. */
+  stats(): Observable<CoachStats> {
+    return this.http.get<CoachStats>(`${this.base}/stats`);
   }
 }

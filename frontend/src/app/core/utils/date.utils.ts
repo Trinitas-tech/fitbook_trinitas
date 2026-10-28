@@ -35,7 +35,9 @@ export function addMonths(date: Date, months: number): Date {
 
 export function sameDay(a: Date, b: Date): boolean {
   return (
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
   );
 }
 
@@ -78,4 +80,13 @@ export function isPast(iso: string): boolean {
 /** Durée en minutes entre deux dates ISO. */
 export function durationMinutes(startIso: string, endIso: string): number {
   return Math.round((new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000);
+}
+
+/** "2026-05" -> "mai 26" (mois abrege en francais). */
+export function formatMonthShort(month: string): string {
+  const [y, m] = month.split('-').map(Number);
+  if (!y || !m) {
+    return month;
+  }
+  return new Date(y, m - 1, 1).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
 }

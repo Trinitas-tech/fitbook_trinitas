@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { GymCard } from '../../../core/models';
@@ -7,7 +8,7 @@ import { RatingStarsComponent } from '../rating-stars/rating-stars.component';
 @Component({
   selector: 'app-gym-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FavoriteButtonComponent, RatingStarsComponent],
+  imports: [DecimalPipe, RouterLink, FavoriteButtonComponent, RatingStarsComponent],
   template: `
     <a class="card card-link gym-card" [routerLink]="['/salles', gym().id]">
       <div class="media">
@@ -22,7 +23,14 @@ import { RatingStarsComponent } from '../rating-stars/rating-stars.component';
       </div>
       <div class="body">
         <h3 class="title">{{ gym().name }}</h3>
-        <p class="muted small">📍 {{ gym().city }} {{ gym().postalCode }}</p>
+        <p class="muted small location">
+          <span>📍 {{ gym().city }} {{ gym().postalCode }}</span>
+          @if (gym().distanceKm !== null && gym().distanceKm !== undefined) {
+            <span class="badge badge-primary distance"
+              >à {{ gym().distanceKm | number: '1.0-1' }} km</span
+            >
+          }
+        </p>
         <app-rating-stars [rating]="gym().averageRating" [count]="gym().reviewCount" size="sm" />
         @if (gym().activities.length) {
           <div class="tags">
@@ -65,6 +73,16 @@ import { RatingStarsComponent } from '../rating-stars/rating-stars.component';
     }
     p {
       margin: 0;
+    }
+    .location {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .distance {
+      font-size: 0.75rem;
     }
     .tags {
       display: flex;

@@ -8,6 +8,8 @@ export interface Booking {
   status: BookingStatus;
   seats: number;
   qrCode: string | null;
+  /** US-22 : image SVG du QR code en data URI (`data:image/svg+xml;base64,...`), contenu = `qrCode`. */
+  qrCodeDataUri?: string | null;
   session: Session;
   canBeCancelled: boolean;
 }
