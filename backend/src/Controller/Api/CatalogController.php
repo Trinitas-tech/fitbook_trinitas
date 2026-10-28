@@ -46,12 +46,13 @@ class CatalogController extends AbstractApiController
         $ratingMin = $request->query->get('ratingMin') !== null && $request->query->get('ratingMin') !== '' ? (float) $request->query->get('ratingMin') : null;
         $date = $this->dateParam($request, 'date');
         $type = $request->query->get('type') ?: null;
+        [$lat, $lng] = $this->position($request);
 
         $byRating = static fn (?float $r) => $ratingMin === null || ($r !== null && $r >= $ratingMin);
 
         $gymsOut = $coachesOut = $coursesOut = [];
         if ($type === null || $type === 'gym') {
-            $gymsOut = array_map(fn (Gym $g) => $this->presenter->gymCard($g), $this->gyms->search($q, $city, $activityId, 1, 50)['items']);
+            $gymsOut = array_map(fn (Gym $g) => $this->presenter->gymCard($g), $this->gyms->search($q, $city, $activityId, 1, 50, $lat, $lng)['items']);
             $gymsOut = array_values(array_filter($gymsOut, static fn (array $g) => $byRating($g['averageRating'])));
         }
         if ($type === null || $type === 'coach') {
@@ -73,6 +74,28 @@ class CatalogController extends AbstractApiController
         ]);
     }
 
+    /**
+     * Position du visiteur (US-21) : query params lat/lng, transmis au Presenter pour distanceKm.
+     *
+     * @return array{0: ?float, 1: ?float}
+     */
+    private function position(Request $request): array
+    {
+        $lat = $request->query->get('lat');
+        $lng = $request->query->get('lng');
+        if ($lat === null || $lng === null || $lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) {
+            return [null, null];
+        }
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+        if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+            throw ApiException::validation(['lat' => 'Coordonnées invalides.']);
+        }
+        $this->presenter->setUserPosition($lat, $lng);
+
+        return [$lat, $lng];
+    }
+
     #[Route('/activities', methods: ['GET'])]
     public function activities(): JsonResponse
     {
@@ -84,7 +107,8 @@ class CatalogController extends AbstractApiController
     {
         $page = $this->page($request);
         $limit = $this->limit($request);
-        $res = $this->gyms->search(null, $request->query->get('city') ?: null, null, $page, $limit);
+        [$lat, $lng] = $this->position($request);
+        $res = $this->gyms->search(null, $request->query->get('city') ?: null, null, $page, $limit, $lat, $lng);
 
         return $this->ok($this->presenter->paginated(array_map(fn (Gym $g) => $this->presenter->gymCard($g), $res['items']), $res['total'], $page, $limit));
     }

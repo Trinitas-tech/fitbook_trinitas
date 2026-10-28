@@ -108,6 +108,21 @@ class Gym
     public function getManager(): User { return $this->manager; }
     public function setManager(User $manager): static { $this->manager = $manager; return $this; }
 
+    /** Distance à vol d'oiseau (formule de Haversine) en km, null si la salle n'est pas géolocalisée (US-21). */
+    public function distanceTo(float $lat, float $lng): ?float
+    {
+        if ($this->latitude === null || $this->longitude === null) {
+            return null;
+        }
+        $lat1 = deg2rad((float) $this->latitude);
+        $lat2 = deg2rad($lat);
+        $dLat = $lat2 - $lat1;
+        $dLng = deg2rad($lng - (float) $this->longitude);
+        $a = sin($dLat / 2) ** 2 + cos($lat1) * cos($lat2) * sin($dLng / 2) ** 2;
+
+        return round(6371 * 2 * atan2(sqrt($a), sqrt(1 - $a)), 1);
+    }
+
     /** @return Collection<int, OpeningHour> */
     public function getOpeningHours(): Collection { return $this->openingHours; }
     public function addOpeningHour(OpeningHour $hour): static

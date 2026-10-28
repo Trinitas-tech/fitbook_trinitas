@@ -185,6 +185,37 @@ class CoachController extends AbstractApiController
         ]);
     }
 
+    /** Statistiques du coach : séances données, à venir, participants, remplissage, note (US-36). */
+    #[Route('/stats', methods: ['GET'])]
+    public function stats(): JsonResponse
+    {
+        $coach = $this->myCoach();
+        $now = new \DateTimeImmutable();
+        $all = $this->sessions->findByCoach($coach, null, null);
+        $given = $upcoming = $participants = $cap = 0;
+        foreach ($all as $s) {
+            if ($s->isCancelled()) {
+                continue;
+            }
+            if ($s->getStartAt() < $now) {
+                ++$given;
+                $participants += $s->getBookedSeats();
+                $cap += $s->getCapacity();
+            } else {
+                ++$upcoming;
+            }
+        }
+
+        return $this->ok([
+            'sessionsGiven' => $given,
+            'upcomingSessions' => $upcoming,
+            'totalParticipants' => $participants,
+            'fillRate' => $cap > 0 ? round($participants / $cap * 100) : 0,
+            'averageRating' => $coach->getAverageRating(),
+            'reviewCount' => \count($coach->getApprovedReviews()),
+        ]);
+    }
+
     #[Route('/reviews', methods: ['GET'])]
     public function reviews(): JsonResponse
     {

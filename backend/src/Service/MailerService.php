@@ -49,6 +49,12 @@ class MailerService
         $this->send($booking->getUser(), 'Réservation annulée – '.$booking->getSession()->getTitle(), 'emails/booking_cancellation.html.twig', ['booking' => $booking, 'session' => $booking->getSession(), 'bySystem' => $bySystem], Notification::TYPE_ANNULATION, $booking);
     }
 
+    /** Rappel 24 h avant la séance (US-20). */
+    public function sendReminder(Booking $booking): void
+    {
+        $this->send($booking->getUser(), 'Rappel : votre séance de demain – '.$booking->getSession()->getTitle(), 'emails/booking_reminder.html.twig', ['booking' => $booking, 'session' => $booking->getSession()], Notification::TYPE_RAPPEL, $booking);
+    }
+
     public function sendSessionCancelled(Booking $booking, Session $session): void
     {
         $this->send($booking->getUser(), 'Séance annulée – '.$session->getTitle(), 'emails/session_cancelled.html.twig', ['booking' => $booking, 'session' => $session], Notification::TYPE_ANNULATION, $booking);

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -54,7 +54,12 @@ export class ManagerService {
     return this.http.post<Session[]>(`${this.base}/courses/${courseId}/sessions`, payload);
   }
 
-  gymSessions(gymId: number, from: Date, to: Date, courseId?: number | null): Observable<Session[]> {
+  gymSessions(
+    gymId: number,
+    from: Date,
+    to: Date,
+    courseId?: number | null,
+  ): Observable<Session[]> {
     return this.http.get<Session[]>(`${this.base}/gyms/${gymId}/sessions`, {
       params: buildParams({ from: toIsoDate(from), to: toIsoDate(to), courseId }),
     });
@@ -84,5 +89,25 @@ export class ManagerService {
 
   gymStats(gymId: number): Observable<GymStats> {
     return this.http.get<GymStats>(`${this.base}/gyms/${gymId}/stats`);
+  }
+
+  /**
+   * US-44 : export CSV des réservations d'une salle (mêmes filtres que la liste).
+   * Réponse complète (`observe: 'response'`) pour lire l'en-tête `Content-Disposition`.
+   */
+  exportGymBookingsCsv(
+    gymId: number,
+    options: { from?: Date; to?: Date; courseId?: number | null; status?: string } = {},
+  ): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.base}/gyms/${gymId}/bookings/export`, {
+      params: buildParams({
+        from: options.from ? toIsoDate(options.from) : undefined,
+        to: options.to ? toIsoDate(options.to) : undefined,
+        courseId: options.courseId,
+        status: options.status,
+      }),
+      responseType: 'blob',
+      observe: 'response',
+    });
   }
 }
