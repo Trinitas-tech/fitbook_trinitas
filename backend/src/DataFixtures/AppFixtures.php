@@ -74,7 +74,7 @@ class AppFixtures extends Fixture
         }
 
         // ----- Activités -----
-        $activityNames = ['Yoga' => 'self_improvement', 'Pilates' => 'accessibility_new', 'Musculation' => 'fitness_center', 'CrossFit' => 'sports_gymnastics', 'Cardio' => 'directions_run', 'Boxe' => 'sports_mma', 'Natation' => 'pool', 'Danse' => 'music_note', 'Cyclisme' => 'directions_bike', 'Zumba' => 'celebration'];
+        $activityNames = ['Yoga' => '🧘', 'Pilates' => '🤸', 'Musculation' => '🏋️', 'CrossFit' => '💪', 'Cardio' => '🏃', 'Boxe' => '🥊', 'Natation' => '🏊', 'Danse' => '💃', 'Cyclisme' => '🚴', 'Zumba' => '🎉'];
         /** @var Activity[] $activities */
         $activities = [];
         foreach ($activityNames as $name => $icon) {

@@ -62,7 +62,7 @@ export interface CoachDetail extends CoachCard {
   reviews: Review[];
 }
 
-export type CourseLevel = 'debutant' | 'intermediaire' | 'avance' | 'tous' | string;
+export type CourseLevel = 'debutant' | 'intermediaire' | 'avance' | 'tous_niveaux' | string;
 
 export interface CourseCard {
   id: number;
@@ -153,14 +153,14 @@ export const LEVEL_LABELS: Record<string, string> = {
   debutant: 'Débutant',
   intermediaire: 'Intermédiaire',
   avance: 'Avancé',
-  tous: 'Tous niveaux',
+  tous_niveaux: 'Tous niveaux',
 };
 
 export const LEVEL_OPTIONS = [
   { value: 'debutant', label: 'Débutant' },
   { value: 'intermediaire', label: 'Intermédiaire' },
   { value: 'avance', label: 'Avancé' },
-  { value: 'tous', label: 'Tous niveaux' },
+  { value: 'tous_niveaux', label: 'Tous niveaux' },
 ];
 
 export const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
