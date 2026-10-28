@@ -12,6 +12,32 @@
 | Cas d'utilisation | `diagrammes/use-cases.puml` | ![Use cases](diagrammes/use-cases.png) |
 | Classes | `diagrammes/classes.puml` | ![Classes](diagrammes/classes.png) |
 
+## Fichier natif StarUML
+
+Les diagrammes de cas d'utilisation et de classes existent aussi au format natif StarUML :
+**`diagrammes/fitbook.mdj`** (un projet, deux diagrammes : « Diagramme de classes » et « Cas d'utilisation »).
+Il s'ouvre dans StarUML (Fichier > Ouvrir) et reste entièrement modifiable.
+
+Le fichier est généré par le script `diagrammes/outils/gen-staruml.js` (Node.js), ce qui garantit sa
+cohérence avec le code (noms des entités, attributs, méthodes, multiplicités) :
+
+```bash
+node docs/diagrammes/outils/gen-staruml.js docs/diagrammes/fitbook.mdj
+# export des images par StarUML lui-même (vérifie que le fichier se charge)
+"C:\Program Files\StarUML\StarUML.exe" image docs/diagrammes/fitbook.mdj -f png -o "out/<%=element.name%>.png"
+```
+
+Le diagramme de classes reprend les 12 entités Doctrine (classes en anglais, tables en français dans le MLD),
+les 4 énumérations, les compositions (`Gym` – `Course` / `OpeningHour`, `Coach` – `Availability`), les deux
+associations de favoris et les notes de contrainte XOR. Le diagramme de cas d'utilisation reprend les 5 acteurs,
+l'acteur secondaire « Serveur d'e-mails », les 6 paquetages, les 4 `include` et les 4 `extend`.
+
+## Fichier natif JMerise (MCD)
+
+Le format `.mcd` de JMerise est une sérialisation binaire Java : il ne peut pas être généré par script.
+Il s'obtient en quelques minutes par rétro-conception du script `fitbook.sql` (procédure détaillée en
+section 6 de [02-mcd-mld.md](02-mcd-mld.md)), puis en ajoutant à la main les deux contraintes XOR.
+
 ## 1. Diagramme de cas d'utilisation
 
 Acteurs : **Visiteur**, **Sportif**, **Coach**, **Gestionnaire de salle**, **Administrateur**,

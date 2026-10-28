@@ -10,6 +10,8 @@ Stack prévue : Angular 21 + Symfony (API) + MySQL. Durée : 140 h.
 | Script SQL du MLD (création MySQL + import JMerise par rétro-conception) | [fitbook.sql](fitbook.sql) |
 | MCD – diagramme FigJam | https://www.figma.com/board/VhYQ5m25lANl7sED0Ap9jP |
 | MCD, MLD, cas d'utilisation (include/extend), classes – PNG/SVG + sources PlantUML | [03-diagrammes-uml.md](03-diagrammes-uml.md), dossier `diagrammes/` |
+| Cas d'utilisation + classes – fichier natif StarUML | [diagrammes/fitbook.mdj](diagrammes/fitbook.mdj) (généré par `diagrammes/outils/gen-staruml.js`) |
+| Contrat de l'API REST | [04-api.md](04-api.md) |
 | Wireframes + maquettes Figma | https://www.figma.com/design/3zUgXqVLVCvrWmTGebKzxF |
 | Tableau Trello | https://trello.com/b/t2CAAITw/fitbook |
 | Dépôt GitHub (GitFlow main / develop) | https://github.com/Trinitas-tech/fitbook_trinitas |
@@ -36,8 +38,8 @@ police Inter.
 - Maquettes : navigation mobile par barre d'onglets en bas, espace gestionnaire avec
   barre latérale, bouton « Réserver » fixe en bas de la fiche sur mobile.
 
-## Suite (après validation)
+## Suite (après validation) – état
 
-1. Fichiers natifs : générer le MCD JMerise depuis `docs/fitbook.sql` (voir section 6 de
-   `02-mcd-mld.md`), puis les deux diagrammes UML dans StarUML à partir des sources PlantUML.
-2. Initialiser Angular 21, Symfony et MySQL (utilisateur dédié, InnoDB forcé).
+1. Fichiers natifs : les deux diagrammes UML sont fournis en StarUML (`diagrammes/fitbook.mdj`). Le MCD JMerise
+   reste à produire à la main par rétro-conception de `docs/fitbook.sql` (section 6 de `02-mcd-mld.md`, format binaire).
+2. Angular 21, Symfony et MySQL (utilisateur dédié, InnoDB forcé) : fait, voir le README racine.
