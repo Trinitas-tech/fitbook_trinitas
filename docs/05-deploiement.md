@@ -74,7 +74,7 @@ dans phpMyAdmin), puis prendre une sauvegarde (section 5).
 | E-mails | inscription d'un nouveau compte | e-mail « Confirmez votre adresse e-mail » dans la boîte Mailtrap |
 | Permissions | sportif → `/admin` | redirection / 403 |
 | Capacité | réserver une séance complète | message « Séance complète » |
-| Newman en production | `newman run postman/FitBook.postman_collection.json -e postman/FitBook.local.postman_environment.json --env-var baseUrl=https://fitbook.trinitasnt.alwaysdata.net/api` | 18 requêtes OK |
+| Newman en production | `newman run postman/FitBook.postman_collection.json -e postman/FitBook.local.postman_environment.json --env-var base_url=https://fitbook.trinitasnt.alwaysdata.net/api` | 18 requêtes OK |
 
 ## 5. Sauvegardes de la base de données
 
