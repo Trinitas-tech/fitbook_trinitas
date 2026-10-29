@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DAY_LABELS, GymDetail, OpeningHour, Session, errorMessage } from '../../core/models';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -6,6 +14,7 @@ import { calendarRange, startOfWeek } from '../../core/utils/date.utils';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { CourseCardComponent } from '../../shared/components/course-card/course-card.component';
 import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
+import { GymMapComponent } from '../../shared/components/gym-map/gym-map.component';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { RatingStarsComponent } from '../../shared/components/rating-stars/rating-stars.component';
 import { ReviewFormComponent } from '../../shared/components/review-form/review-form.component';
@@ -25,6 +34,7 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
     ReviewListComponent,
     ReviewFormComponent,
     WeekCalendarComponent,
+    GymMapComponent,
   ],
   template: `
     <div class="container page">
@@ -44,9 +54,16 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
             <div class="flex between flex-wrap">
               <div>
                 <h1 style="margin-bottom: 4px">{{ g.name }}</h1>
-                <p class="muted" style="margin: 0">📍 {{ g.address }}, {{ g.postalCode }} {{ g.city }}</p>
+                <p class="muted" style="margin: 0">
+                  📍 {{ g.address }}, {{ g.postalCode }} {{ g.city }}
+                </p>
               </div>
-              <app-favorite-button type="gym" [id]="g.id" [isFavorite]="g.isFavorite" [showLabel]="true" />
+              <app-favorite-button
+                type="gym"
+                [id]="g.id"
+                [isFavorite]="g.isFavorite"
+                [showLabel]="true"
+              />
             </div>
             <div class="flex flex-wrap mt-16" style="gap: 16px">
               <app-rating-stars [rating]="g.averageRating" [count]="g.reviewCount" />
@@ -104,10 +121,21 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
               <app-review-list [reviews]="g.reviews" />
             </section>
 
-            <app-review-form [gymId]="g.id" heading="Donner votre avis sur cette salle" (published)="onReviewPublished()" />
+            <app-review-form
+              [gymId]="g.id"
+              heading="Donner votre avis sur cette salle"
+              (published)="onReviewPublished()"
+            />
           </div>
 
           <aside>
+            @if (mapGyms().length) {
+              <div class="card map-card mb-16">
+                <h3>Localisation</h3>
+                <p class="muted small">{{ g.address }}, {{ g.postalCode }} {{ g.city }}</p>
+                <app-gym-map [gyms]="mapGyms()" height="260px" />
+              </div>
+            }
             <div class="card">
               <h3>Horaires d'ouverture</h3>
               <ul class="hours">
@@ -128,7 +156,9 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
             @if (g.manager) {
               <div class="card mt-16">
                 <h3>Gestionnaire</h3>
-                <p class="muted" style="margin: 0">{{ g.manager.firstName }} {{ g.manager.lastName }}</p>
+                <p class="muted" style="margin: 0">
+                  {{ g.manager.firstName }} {{ g.manager.lastName }}
+                </p>
               </div>
             }
           </aside>
@@ -199,6 +229,12 @@ export class GymDetailComponent implements OnInit {
   readonly sessionsLoading = signal(false);
   readonly sessionsError = signal<string | null>(null);
 
+  /** US-21 : la salle seule sur la carte si elle a des coordonnées (tableau stable pour l'input). */
+  readonly mapGyms = computed<GymDetail[]>(() => {
+    const g = this.gym();
+    return g && typeof g.latitude === 'number' && typeof g.longitude === 'number' ? [g] : [];
+  });
+
   readonly hours = computed(() => {
     const todayIndex = (new Date().getDay() + 6) % 7;
     const list = this.gym()?.openingHours ?? [];
@@ -236,7 +272,9 @@ export class GymDetailComponent implements OnInit {
   }
 
   onReviewPublished(): void {
-    this.catalog.gym(Number(this.id())).subscribe({ next: (g) => this.gym.set(g), error: () => undefined });
+    this.catalog
+      .gym(Number(this.id()))
+      .subscribe({ next: (g) => this.gym.set(g), error: () => undefined });
   }
 
   private loadSessions(): void {

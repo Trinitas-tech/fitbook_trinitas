@@ -15,6 +15,11 @@ export interface GymCard {
   reviewCount: number;
   activities: string[];
   isFavorite: boolean;
+  /** US-21 : coordonnées GPS (null si non renseignées). */
+  latitude?: number | null;
+  longitude?: number | null;
+  /** US-21 : distance en km depuis la position `lat`/`lng` fournie, null sinon. */
+  distanceKm?: number | null;
 }
 
 export interface OpeningHour {
@@ -133,6 +138,9 @@ export interface SearchParams {
   date?: string;
   ratingMin?: string;
   type?: SearchType | '';
+  /** US-21 : position du navigateur (tri des salles par distance côté API). */
+  lat?: string;
+  lng?: string;
 }
 
 export const SESSION_STATUS_LABELS: Record<SessionStatus, string> = {

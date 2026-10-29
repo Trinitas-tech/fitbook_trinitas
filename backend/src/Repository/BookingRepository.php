@@ -106,6 +106,94 @@ class BookingRepository extends ServiceEntityRepository
         return ['items' => $items, 'total' => $total];
     }
 
+    /**
+     * Réservations confirmées dont la séance commence dans la fenêtre, sans rappel déjà envoyé (US-20).
+     *
+     * @return Booking[]
+     */
+    public function findToRemind(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        return $this->createQueryBuilder('b')
+            ->join('b.session', 's')->addSelect('s')
+            ->join('b.user', 'u')->addSelect('u')
+            ->andWhere('b.status = :confirmed')->setParameter('confirmed', BookingStatus::CONFIRMEE)
+            ->andWhere('s.startAt BETWEEN :from AND :to')->setParameter('from', $from)->setParameter('to', $to)
+            ->andWhere('s.status <> :cancelled')->setParameter('cancelled', 'annulee')
+            ->andWhere('NOT EXISTS (SELECT 1 FROM App\Entity\Notification n WHERE n.booking = b AND n.type = :rappel)')->setParameter('rappel', 'rappel')
+            ->getQuery()->getResult();
+    }
+
+    /**
+     * Réservations par mois de séance sur les N derniers mois (US-54).
+     *
+     * @return array<string, array{confirmed: int, cancelled: int}> clé = "AAAA-MM"
+     */
+    public function countByMonth(int $months = 6): array
+    {
+        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0)->modify(sprintf('-%d months', $months - 1));
+        $rows = $this->createQueryBuilder('b')
+            ->select('b.bookedAt AS bookedAt', 'b.status AS status')
+            ->andWhere('b.bookedAt >= :start')->setParameter('start', $start)
+            ->getQuery()->getArrayResult();
+        $out = [];
+        for ($i = 0; $i < $months; ++$i) {
+            $out[$start->modify("+$i months")->format('Y-m')] = ['confirmed' => 0, 'cancelled' => 0];
+        }
+        foreach ($rows as $row) {
+            $key = $row['bookedAt']->format('Y-m');
+            if (!isset($out[$key])) {
+                continue;
+            }
+            $status = $row['status'] instanceof BookingStatus ? $row['status'] : BookingStatus::from($row['status']);
+            if ($status === BookingStatus::ANNULEE) {
+                ++$out[$key]['cancelled'];
+            } else {
+                ++$out[$key]['confirmed'];
+            }
+        }
+
+        return $out;
+    }
+
+    /** @return array<string, int> statut => nombre */
+    public function countByStatus(): array
+    {
+        $rows = $this->createQueryBuilder('b')->select('b.status AS status', 'COUNT(b.id) AS n')->groupBy('b.status')->getQuery()->getArrayResult();
+        $out = ['confirmee' => 0, 'annulee' => 0, 'terminee' => 0];
+        foreach ($rows as $row) {
+            $key = $row['status'] instanceof BookingStatus ? $row['status']->value : (string) $row['status'];
+            $out[$key] = (int) $row['n'];
+        }
+
+        return $out;
+    }
+
+    /** @return list<array{name: string, bookings: int}> */
+    public function topActivities(int $limit = 5): array
+    {
+        $rows = $this->createQueryBuilder('b')
+            ->select('a.name AS name', 'COUNT(b.id) AS bookings')
+            ->join('b.session', 's')->join('s.course', 'c')->join('c.activity', 'a')
+            ->andWhere('b.status <> :cancelled')->setParameter('cancelled', BookingStatus::ANNULEE)
+            ->groupBy('a.id')->orderBy('bookings', 'DESC')->setMaxResults($limit)
+            ->getQuery()->getArrayResult();
+
+        return array_map(static fn (array $r) => ['name' => $r['name'], 'bookings' => (int) $r['bookings']], $rows);
+    }
+
+    /** @return list<array{name: string, bookings: int}> */
+    public function topGyms(int $limit = 5): array
+    {
+        $rows = $this->createQueryBuilder('b')
+            ->select('g.name AS name', 'COUNT(b.id) AS bookings')
+            ->join('b.session', 's')->join('s.course', 'c')->join('c.gym', 'g')
+            ->andWhere('b.status <> :cancelled')->setParameter('cancelled', BookingStatus::ANNULEE)
+            ->groupBy('g.id')->orderBy('bookings', 'DESC')->setMaxResults($limit)
+            ->getQuery()->getArrayResult();
+
+        return array_map(static fn (array $r) => ['name' => $r['name'], 'bookings' => (int) $r['bookings']], $rows);
+    }
+
     public function countAll(?BookingStatus $status = null): int
     {
         $qb = $this->createQueryBuilder('b')->select('COUNT(b.id)');

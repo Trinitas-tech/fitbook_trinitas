@@ -1,10 +1,34 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BookingWithUser, GymDetail, Session, errorMessage } from '../../../core/models';
+import {
+  BOOKING_STATUS_LABELS,
+  BookingWithUser,
+  GymDetail,
+  Session,
+  errorMessage,
+} from '../../../core/models';
 import { ManagerService } from '../../../core/services/manager.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { CalendarView, calendarRange, startOfWeek } from '../../../core/utils/date.utils';
+import {
+  CalendarView,
+  calendarRange,
+  startOfWeek,
+  toIsoDate,
+} from '../../../core/utils/date.utils';
+import {
+  filenameFromContentDisposition,
+  saveBlob,
+  slugify,
+} from '../../../core/utils/download.utils';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
@@ -34,15 +58,50 @@ import { ManagerGymStore } from '../manager-gym.store';
         <a routerLink="/gestionnaire/salles" class="small">← Mes salles</a>
         <h1 class="page-title">Réservations · {{ gym()?.name || '' }}</h1>
       </div>
-      <label class="flex">
-        <span class="label">Cours :</span>
-        <select class="input" style="width: auto" [value]="courseFilter() ?? ''" (change)="setCourse($event)">
-          <option value="">Tous les cours</option>
-          @for (c of gym()?.courses ?? []; track c.id) {
-            <option [value]="c.id">{{ c.title }}</option>
+      <div class="flex flex-wrap toolbar">
+        <label class="flex">
+          <span class="label">Cours :</span>
+          <select
+            class="input"
+            style="width: auto"
+            [value]="courseFilter() ?? ''"
+            (change)="setCourse($event)"
+          >
+            <option value="">Tous les cours</option>
+            @for (c of gym()?.courses ?? []; track c.id) {
+              <option [value]="c.id">{{ c.title }}</option>
+            }
+          </select>
+        </label>
+        <label class="flex">
+          <span class="label">Statut :</span>
+          <select
+            class="input"
+            style="width: auto"
+            [value]="statusFilter()"
+            (change)="setStatus($event)"
+          >
+            <option value="">Tous</option>
+            @for (s of statusOptions; track s.value) {
+              <option [value]="s.value">{{ s.label }}</option>
+            }
+          </select>
+        </label>
+        <!-- US-44 : export CSV avec les mêmes filtres que la liste -->
+        <button
+          type="button"
+          class="btn btn-outline"
+          (click)="exportCsv()"
+          [disabled]="exporting() || !gym()"
+        >
+          @if (exporting()) {
+            <span class="spinner" style="width: 16px; height: 16px; border-width: 2px"></span>
+            Export en cours…
+          } @else {
+            ⬇ Exporter en CSV
           }
-        </select>
-      </label>
+        </button>
+      </div>
     </div>
     <app-manager-gym-nav [gymId]="gymId()" />
 
@@ -67,7 +126,13 @@ import { ManagerGymStore } from '../manager-gym.store';
       <div class="two-col mt-24">
         <section>
           <h2>Séances ({{ sortedSessions().length }})</h2>
-          <app-session-list [sessions]="sortedSessions()" [showBook]="false" [selectedId]="selected()?.id ?? null" (select)="select($event)" emptyMessage="Aucune séance sur cette période." />
+          <app-session-list
+            [sessions]="sortedSessions()"
+            [showBook]="false"
+            [selectedId]="selected()?.id ?? null"
+            (select)="select($event)"
+            emptyMessage="Aucune séance sur cette période."
+          />
         </section>
 
         <section class="card">
@@ -75,10 +140,14 @@ import { ManagerGymStore } from '../manager-gym.store';
             <div class="flex between flex-wrap">
               <h3 style="margin: 0">{{ s.course?.title || 'Séance' }}</h3>
               @if (s.status === 'planifiee' || s.status === 'complete') {
-                <button type="button" class="btn btn-danger btn-sm" (click)="toCancel.set(s)">Annuler la séance</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="toCancel.set(s)">
+                  Annuler la séance
+                </button>
               }
             </div>
-            <p class="muted" style="text-transform: capitalize">{{ s.startAt | date: 'EEEE d MMMM · HH:mm' }} – {{ s.endAt | date: 'HH:mm' }}</p>
+            <p class="muted" style="text-transform: capitalize">
+              {{ s.startAt | date: 'EEEE d MMMM · HH:mm' }} – {{ s.endAt | date: 'HH:mm' }}
+            </p>
             <h4>Réservations ({{ bookingsFor(s).length }})</h4>
             @if (bookingsFor(s).length === 0) {
               <p class="muted small">Aucune réservation pour cette séance.</p>
@@ -88,7 +157,9 @@ import { ManagerGymStore } from '../manager-gym.store';
                   <li class="booking-row">
                     <div>
                       <strong>{{ b.user.firstName }} {{ b.user.lastName }}</strong>
-                      <div class="muted small">{{ b.user.email }} · {{ b.seats }} place{{ b.seats > 1 ? 's' : '' }}</div>
+                      <div class="muted small">
+                        {{ b.user.email }} · {{ b.seats }} place{{ b.seats > 1 ? 's' : '' }}
+                      </div>
                     </div>
                     <app-status-badge kind="booking" [status]="b.status" />
                   </li>
@@ -98,7 +169,9 @@ import { ManagerGymStore } from '../manager-gym.store';
           } @else {
             <h3>Réservations de la période ({{ bookings().length }})</h3>
             <app-alert type="error" [message]="bookingsError()" />
-            <p class="muted small">Sélectionnez une séance pour voir ses participants et l'annuler si besoin.</p>
+            <p class="muted small">
+              Sélectionnez une séance pour voir ses participants et l'annuler si besoin.
+            </p>
             @if (bookings().length === 0) {
               <p class="muted">Aucune réservation sur cette période.</p>
             } @else {
@@ -107,7 +180,10 @@ import { ManagerGymStore } from '../manager-gym.store';
                   <li class="booking-row">
                     <div>
                       <strong>{{ b.user.firstName }} {{ b.user.lastName }}</strong>
-                      <div class="muted small">{{ b.session.course?.title || 'Séance' }} · {{ b.session.startAt | date: 'd MMM HH:mm' }}</div>
+                      <div class="muted small">
+                        {{ b.session.course?.title || 'Séance' }} ·
+                        {{ b.session.startAt | date: 'd MMM HH:mm' }}
+                      </div>
                     </div>
                     <app-status-badge kind="booking" [status]="b.status" />
                   </li>
@@ -143,6 +219,17 @@ import { ManagerGymStore } from '../manager-gym.store';
     .booking-row:last-child {
       border-bottom: none;
     }
+    .toolbar {
+      gap: 12px;
+    }
+    @media (max-width: 768px) {
+      .toolbar {
+        width: 100%;
+      }
+      .toolbar .btn {
+        width: 100%;
+      }
+    }
   `,
 })
 export class ManagerGymBookingsComponent implements OnInit {
@@ -169,9 +256,18 @@ export class ManagerGymBookingsComponent implements OnInit {
   readonly selected = signal<Session | null>(null);
   readonly toCancel = signal<Session | null>(null);
   readonly busy = signal(false);
+  /** Filtre statut partagé entre la liste et l'export CSV ('' = tous). */
+  readonly statusFilter = signal('');
+  readonly exporting = signal(false);
+  readonly statusOptions = Object.entries(BOOKING_STATUS_LABELS).map(([value, label]) => ({
+    value,
+    label,
+  }));
 
   readonly sortedSessions = computed(() =>
-    [...this.sessions()].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
+    [...this.sessions()].sort(
+      (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+    ),
   );
 
   ngOnInit(): void {
@@ -208,10 +304,47 @@ export class ManagerGymBookingsComponent implements OnInit {
     this.load();
   }
 
+  setStatus(event: Event): void {
+    this.statusFilter.set((event.target as HTMLSelectElement).value);
+    this.loadBookings();
+  }
+
   setCursor(date: Date): void {
     this.cursor.set(date);
     this.selected.set(null);
     this.load();
+  }
+
+  /** US-44 : télécharge le CSV des réservations (période, cours et statut courants). */
+  exportCsv(): void {
+    const gym = this.gym();
+    if (!gym || this.exporting()) {
+      return;
+    }
+    const { from, to } = calendarRange(this.cursor(), this.view());
+    this.exporting.set(true);
+    this.manager
+      .exportGymBookingsCsv(gym.id, {
+        from,
+        to,
+        courseId: this.courseFilter(),
+        status: this.statusFilter() || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.exporting.set(false);
+          const fallback = `reservations-${slugify(gym.name)}-${toIsoDate(new Date())}.csv`;
+          const filename =
+            filenameFromContentDisposition(response.headers.get('Content-Disposition')) ?? fallback;
+          const blob = response.body ?? new Blob([], { type: 'text/csv;charset=utf-8' });
+          saveBlob(blob, filename);
+          this.toast.success(`Export téléchargé : ${filename}`);
+        },
+        error: (err: unknown) => {
+          this.exporting.set(false);
+          this.toast.error(errorMessage(err, "L'export CSV a échoué."));
+        },
+      });
   }
 
   setView(view: CalendarView): void {
@@ -267,9 +400,16 @@ export class ManagerGymBookingsComponent implements OnInit {
   private loadBookings(): void {
     const { from, to } = calendarRange(this.cursor(), this.view());
     this.bookingsError.set(null);
-    this.manager.gymBookings(this.gymId(), { from, to, courseId: this.courseFilter() }).subscribe({
-      next: (list) => this.bookings.set(list),
-      error: (err: unknown) => this.bookingsError.set(errorMessage(err)),
-    });
+    this.manager
+      .gymBookings(this.gymId(), {
+        from,
+        to,
+        courseId: this.courseFilter(),
+        status: this.statusFilter() || undefined,
+      })
+      .subscribe({
+        next: (list) => this.bookings.set(list),
+        error: (err: unknown) => this.bookingsError.set(errorMessage(err)),
+      });
   }
 }

@@ -141,3 +141,17 @@ Un sportif qui re-réserve une séance qu'il avait annulée voit sa réservation
   annulation de réservation, annulation de séance, réinitialisation de mot de passe.
 - Note moyenne : calculée sur les avis `approuve` (arrondie à 1 décimale), exposée dans `averageRating`.
 - Commande `app:sessions:close` : passe en `terminee` les séances dont `endAt < now()` et leurs réservations.
+
+## 8. Bonus « Could » (US-20, US-21, US-22, US-36, US-44, US-54)
+
+| Méthode | Route | Params / Corps | Réponse | US |
+|---------|-------|----------------|---------|----|
+| GET | `/search`, `/gyms` | `lat`, `lng` (position du navigateur) | les `GymCard` contiennent `latitude`, `longitude`, `distanceKm` (null sans coordonnées) et sont triées par distance croissante quand `lat`/`lng` sont fournis | US-21 |
+| GET 🔒 | `/bookings/me`, `/bookings/{id}`, `POST /bookings` | | `Booking.qrCodeDataUri` : image SVG du QR code en data URI (`data:image/svg+xml;base64,...`), contenu = `qrCode` | US-22 |
+| GET 🔒`ROLE_COACH` | `/coach/stats` | | `{ sessionsGiven, upcomingSessions, totalParticipants, fillRate (0-100), averageRating, reviewCount }` | US-36 |
+| GET 🔒`ROLE_MANAGER` | `/manager/gyms/{id}/bookings/export` (alias `/bookings.csv`, à éviter avec le serveur PHP intégré) | `from, to, courseId, status` | fichier `text/csv; charset=UTF-8` (BOM, séparateur `;`), colonnes : Réservation ; Sportif ; E-mail ; Séance ; Date ; Heure ; Places ; Statut ; Code. En-tête `Content-Disposition: attachment` | US-44 |
+| GET 🔒`ROLE_ADMIN` | `/admin/stats` | | champs supplémentaires : `registrationsByMonth: [{ month: "2026-05", count }]` (6 derniers mois), `bookingsByMonth: [{ month, confirmed, cancelled }]`, `bookingsByStatus: { confirmee, annulee, terminee }`, `topActivities: [{ name, bookings }]` (5 max), `topGyms: [{ name, bookings }]` (5 max) | US-54 |
+
+Rappel 24 h avant la séance (US-20) : commande `php bin/console app:bookings:remind` à planifier toutes les heures ;
+elle envoie l'e-mail de rappel (type `rappel` en table `notification`) pour chaque réservation confirmée dont la séance
+commence dans 23 à 25 h et qui n'a pas encore été rappelée.

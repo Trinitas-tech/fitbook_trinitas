@@ -23,8 +23,10 @@ use App\Security\Voter\SessionVoter;
 use App\Service\Presenter;
 use App\Service\SessionService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -299,6 +301,46 @@ class ManagerController extends AbstractApiController
         $list = $this->bookings->findByGym($gym, $this->dateParam($request, 'from'), $this->dateParam($request, 'to'), $request->query->getInt('courseId') ?: null, $request->query->get('status') ?: null);
 
         return $this->ok(array_map(fn (Booking $b) => $this->presenter->booking($b, true), $list));
+    }
+
+    /** Export CSV des réservations de la salle, mêmes filtres que la liste (US-44 bonus). */
+    #[Route('/gyms/{id}/bookings/export', name: 'manager_bookings_export', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/gyms/{id}/bookings.csv', name: 'manager_bookings_csv', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function gymBookingsCsv(int $id, Request $request): Response
+    {
+        $gym = $this->myGym($id);
+        $list = $this->bookings->findByGym($gym, $this->dateParam($request, 'from'), $this->dateParam($request, 'to'), $request->query->getInt('courseId') ?: null, $request->query->get('status') ?: null);
+        $labels = ['confirmee' => 'Confirmée', 'annulee' => 'Annulée', 'terminee' => 'Terminée'];
+
+        $handle = fopen('php://temp', 'r+');
+        fwrite($handle, "\xEF\xBB\xBF"); // BOM UTF-8 pour Excel
+        fputcsv($handle, ['Réservation', 'Sportif', 'E-mail', 'Séance', 'Date', 'Heure', 'Places', 'Statut', 'Code'], ';', '"', '\\', "\r\n");
+        foreach ($list as $b) {
+            $s = $b->getSession();
+            fputcsv($handle, [
+                $b->getId(),
+                $b->getUser()->getFullName(),
+                $b->getUser()->getEmail(),
+                $s->getTitle(),
+                $s->getStartAt()->format('d/m/Y'),
+                $s->getStartAt()->format('H:i').' - '.$s->getEndAt()->format('H:i'),
+                $b->getSeats(),
+                $labels[$b->getStatus()->value] ?? $b->getStatus()->value,
+                $b->getQrCode(),
+            ], ';', '"', '\\', "\r\n");
+        }
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $gym->getName())), '-'));
+        $filename = sprintf('reservations-%s-%s.csv', $slug, (new \DateTimeImmutable())->format('Y-m-d'));
+
+        return new Response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $filename),
+            'Access-Control-Expose-Headers' => 'Content-Disposition',
+        ]);
     }
 
     #[Route('/sessions/{id}', methods: ['PUT', 'PATCH'], requirements: ['id' => '\d+'])]

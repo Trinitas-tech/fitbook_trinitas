@@ -33,7 +33,7 @@ class BookingController extends AbstractApiController
         ]);
         $booking = $this->bookingService->book($this->currentUser(), (int) $data['sessionId'], (int) ($data['seats'] ?? 1));
 
-        return $this->ok($this->presenter->booking($booking), 201);
+        return $this->ok($this->presenter->booking($booking, false, true), 201);
     }
 
     #[Route('/me', methods: ['GET'])]
@@ -41,7 +41,7 @@ class BookingController extends AbstractApiController
     {
         $list = $this->bookings->findByUser($this->currentUser(), $request->query->get('scope'));
 
-        return $this->ok(array_map(fn (Booking $b) => $this->presenter->booking($b), $list));
+        return $this->ok(array_map(fn (Booking $b) => $this->presenter->booking($b, false, true), $list));
     }
 
     #[Route('/{id}', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -50,7 +50,7 @@ class BookingController extends AbstractApiController
         $booking = $this->bookings->find($id) ?? throw ApiException::notFound('Réservation introuvable.');
         $this->denyAccessUnlessGranted(BookingVoter::OWN, $booking);
 
-        return $this->ok($this->presenter->booking($booking));
+        return $this->ok($this->presenter->booking($booking, false, true));
     }
 
     #[Route('/{id}/cancel', methods: ['PATCH'], requirements: ['id' => '\d+'])]

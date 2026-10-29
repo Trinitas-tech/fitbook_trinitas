@@ -1,5 +1,13 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Booking, errorMessage } from '../../../core/models';
 import { BookingService } from '../../../core/services/booking.service';
@@ -33,8 +41,24 @@ type Scope = 'upcoming' | 'past';
       </div>
 
       <div class="tabs" role="tablist">
-        <button type="button" class="tab" role="tab" [class.active]="scope() === 'upcoming'" (click)="setScope('upcoming')">À venir</button>
-        <button type="button" class="tab" role="tab" [class.active]="scope() === 'past'" (click)="setScope('past')">Passées</button>
+        <button
+          type="button"
+          class="tab"
+          role="tab"
+          [class.active]="scope() === 'upcoming'"
+          (click)="setScope('upcoming')"
+        >
+          À venir
+        </button>
+        <button
+          type="button"
+          class="tab"
+          role="tab"
+          [class.active]="scope() === 'past'"
+          (click)="setScope('past')"
+        >
+          Passées
+        </button>
       </div>
 
       @if (loading()) {
@@ -44,11 +68,15 @@ type Scope = 'upcoming' | 'past';
       } @else if (bookings().length === 0) {
         <app-empty-state
           icon="📅"
-          [title]="scope() === 'upcoming' ? 'Aucune réservation à venir' : 'Aucune réservation passée'"
+          [title]="
+            scope() === 'upcoming' ? 'Aucune réservation à venir' : 'Aucune réservation passée'
+          "
           [message]="scope() === 'upcoming' ? 'Trouvez une séance et réservez votre place !' : null"
         >
           @if (scope() === 'upcoming') {
-            <a routerLink="/recherche" class="btn btn-primary btn-sm mt-16">Rechercher une séance</a>
+            <a routerLink="/recherche" class="btn btn-primary btn-sm mt-16"
+              >Rechercher une séance</a
+            >
           }
         </app-empty-state>
       } @else {
@@ -63,7 +91,9 @@ type Scope = 'upcoming' | 'past';
                 @if (b.session.course) {
                   <a [routerLink]="['/cours', b.session.course.id]">{{ b.session.course.title }}</a>
                 } @else if (b.session.coach) {
-                  <a [routerLink]="['/coachs', b.session.coach.id]">Séance avec {{ b.session.coach.firstName }} {{ b.session.coach.lastName }}</a>
+                  <a [routerLink]="['/coachs', b.session.coach.id]"
+                    >Séance avec {{ b.session.coach.firstName }} {{ b.session.coach.lastName }}</a
+                  >
                 } @else {
                   Séance
                 }
@@ -78,17 +108,36 @@ type Scope = 'upcoming' | 'past';
                 }
               </p>
               <p class="muted small" style="margin: 4px 0 0">
-                {{ b.seats }} place{{ b.seats > 1 ? 's' : '' }} · {{ b.session.price * b.seats | currency: 'EUR' : 'symbol' : '1.0-2' }}
+                {{ b.seats }} place{{ b.seats > 1 ? 's' : '' }} ·
+                {{ b.session.price * b.seats | currency: 'EUR' : 'symbol' : '1.0-2' }}
               </p>
               @if (b.qrCode) {
                 <div class="qr">
+                  @if (b.status === 'confirmee' && qrSrc(b); as src) {
+                    <button
+                      type="button"
+                      class="qr-img"
+                      (click)="qrOpen.set(b)"
+                      title="Agrandir le QR code"
+                      aria-label="Agrandir le QR code"
+                    >
+                      <img
+                        [src]="src"
+                        width="140"
+                        height="140"
+                        alt="QR code de la réservation {{ b.qrCode }}"
+                      />
+                    </button>
+                  }
                   <span class="muted small">Code d'accès</span>
                   <code>{{ b.qrCode }}</code>
                 </div>
               }
               @if (b.canBeCancelled) {
                 <div class="form-actions">
-                  <button type="button" class="btn btn-outline btn-sm" (click)="toCancel.set(b)">Annuler</button>
+                  <button type="button" class="btn btn-outline btn-sm" (click)="toCancel.set(b)">
+                    Annuler
+                  </button>
                 </div>
               }
             </article>
@@ -96,10 +145,50 @@ type Scope = 'upcoming' | 'past';
         </div>
       }
 
+      <!-- US-22 : QR code en grand -->
+      @if (qrOpen(); as b) {
+        <div class="modal-backdrop" (click)="qrOpen.set(null)">
+          <div
+            class="modal qr-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="qr-title"
+            (click)="$event.stopPropagation()"
+          >
+            <h3 class="modal-title" id="qr-title">À présenter à l'entrée</h3>
+            <p class="muted small" style="margin-bottom: 16px">
+              @if (b.session.course) {
+                {{ b.session.course.title }} ·
+              }
+              {{ b.session.startAt | date: 'EEEE d MMMM yyyy à HH:mm' }}
+            </p>
+            @if (qrSrc(b); as src) {
+              <img
+                class="qr-large"
+                [src]="src"
+                width="300"
+                height="300"
+                alt="QR code de la réservation {{ b.qrCode }}"
+              />
+            }
+            <code class="qr-code">{{ b.qrCode }}</code>
+            <div class="form-actions" style="justify-content: center">
+              <button type="button" class="btn btn-outline" (click)="qrOpen.set(null)">
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
       @if (toCancel(); as b) {
         <app-confirm-dialog
           title="Annuler la réservation ?"
-          [message]="'Votre place pour la séance du ' + (b.session.startAt | date: 'd MMMM à HH:mm') + ' sera libérée. Cette action est irréversible.'"
+          [message]="
+            'Votre place pour la séance du ' +
+            (b.session.startAt | date: 'd MMMM à HH:mm') +
+            ' sera libérée. Cette action est irréversible.'
+          "
           confirmLabel="Oui, annuler"
           [danger]="true"
           [busy]="cancelling()"
@@ -133,6 +222,46 @@ type Scope = 'upcoming' | 'past';
       letter-spacing: 0.08em;
       word-break: break-all;
     }
+    .qr-img {
+      align-self: center;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 6px;
+      margin-bottom: 8px;
+      cursor: zoom-in;
+      transition: box-shadow 0.15s;
+    }
+    .qr-img:hover {
+      box-shadow: var(--shadow-hover);
+    }
+    .qr-img img {
+      width: 140px;
+      height: 140px;
+      border-radius: 8px;
+    }
+    .qr-modal {
+      max-width: 400px;
+      text-align: center;
+    }
+    .qr-large {
+      width: 300px;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto 12px;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 8px;
+    }
+    .qr-code {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
     .form-actions {
       margin-top: auto;
       padding-top: 12px;
@@ -142,6 +271,9 @@ type Scope = 'upcoming' | 'past';
 export class MyBookingsComponent implements OnInit {
   private readonly bookingService = inject(BookingService);
   private readonly toast = inject(ToastService);
+  private readonly sanitizer = inject(DomSanitizer);
+  /** Cache des data URI « approuvées » (évite de recréer un SafeUrl à chaque rendu). */
+  private readonly qrCache = new Map<string, SafeUrl>();
 
   readonly scope = signal<Scope>('upcoming');
   readonly bookings = signal<Booking[]>([]);
@@ -149,9 +281,33 @@ export class MyBookingsComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly toCancel = signal<Booking | null>(null);
   readonly cancelling = signal(false);
+  /** US-22 : réservation dont le QR code est affiché en grand. */
+  readonly qrOpen = signal<Booking | null>(null);
 
   ngOnInit(): void {
     this.load();
+  }
+
+  @HostListener('document:keydown.escape')
+  closeQr(): void {
+    this.qrOpen.set(null);
+  }
+
+  /**
+   * US-22 : Angular n'autorise pas `data:image/svg+xml` dans `[src]` par défaut ;
+   * la data URI vient de notre API, on la déclare sûre (SVG généré côté serveur).
+   */
+  qrSrc(booking: Booking): SafeUrl | null {
+    const uri = booking.qrCodeDataUri;
+    if (!uri || !uri.startsWith('data:image/svg+xml')) {
+      return null;
+    }
+    let safe = this.qrCache.get(uri);
+    if (!safe) {
+      safe = this.sanitizer.bypassSecurityTrustUrl(uri);
+      this.qrCache.set(uri, safe);
+    }
+    return safe;
   }
 
   setScope(scope: Scope): void {
@@ -184,7 +340,8 @@ export class MyBookingsComponent implements OnInit {
     this.bookingService.mine(this.scope()).subscribe({
       next: (list) => {
         const sorted = [...list].sort((a, b) => {
-          const diff = new Date(a.session.startAt).getTime() - new Date(b.session.startAt).getTime();
+          const diff =
+            new Date(a.session.startAt).getTime() - new Date(b.session.startAt).getTime();
           return this.scope() === 'upcoming' ? diff : -diff;
         });
         this.bookings.set(sorted);

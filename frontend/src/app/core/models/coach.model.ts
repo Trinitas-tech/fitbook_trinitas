@@ -27,3 +27,14 @@ export interface CoachReviews {
 }
 
 export type AvailabilityPayload = Availability[];
+
+/** US-36 : statistiques du tableau de bord coach (`GET /coach/stats`). */
+export interface CoachStats {
+  sessionsGiven: number;
+  upcomingSessions: number;
+  totalParticipants: number;
+  /** Taux de remplissage en pourcentage (0-100). */
+  fillRate: number;
+  averageRating: number | null;
+  reviewCount: number;
+}
