@@ -16,6 +16,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /** Règles métier de réservation (US-15, US-17, US-60, US-61) testées sans base de données. */
+#[AllowMockObjectsWithoutExpectations]
 final class BookingServiceTest extends TestCase
 {
     private EntityManagerInterface&MockObject $em;
