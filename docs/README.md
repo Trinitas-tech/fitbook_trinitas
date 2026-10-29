@@ -36,8 +36,13 @@ police Inter.
 - Maquettes : navigation mobile par barre d'onglets en bas, espace gestionnaire avec
   barre latérale, bouton « Réserver » fixe en bas de la fiche sur mobile.
 
-## Suite (après validation)
+## Suite (après validation) – état au 29/10/2026
 
-1. Fichiers natifs : générer le MCD JMerise depuis `docs/fitbook.sql` (voir section 6 de
-   `02-mcd-mld.md`), puis les deux diagrammes UML dans StarUML à partir des sources PlantUML.
-2. Initialiser Angular 21, Symfony et MySQL (utilisateur dédié, InnoDB forcé).
+1. Fichiers natifs : les deux diagrammes UML sont fournis en StarUML (`diagrammes/fitbook.mdj`). Le MCD JMerise
+   reste à produire à la main par rétro-conception de `docs/fitbook.sql` (section 6 de `02-mcd-mld.md`, format binaire).
+2. Angular 21, Symfony et MySQL (utilisateur dédié, InnoDB forcé) : fait, voir le README racine.
+3. Fonctionnalités : 42 user stories réalisées (35 Must, 2 Should, 5 Could/bonus).
+4. Cahier des charges intégrant l'analyse et la modélisation : [00-cahier-des-charges.md](00-cahier-des-charges.md).
+5. Tests unitaires, d'intégration, Newman, vérification Mailtrap : [06-tests.md](06-tests.md).
+6. Sauvegardes MySQL : [sauvegardes/](sauvegardes/). Déploiement alwaysdata : [05-deploiement.md](05-deploiement.md).
+7. Présentation finale : [07-presentation.md](07-presentation.md).
