@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { IconComponent } from '../icon/icon.component';
 
 export interface SidebarLink {
   path: string;
   label: string;
+  /** Nom d'icône du composant `app-icon` (ex. `chart`, `users`). */
   icon: string;
   exact?: boolean;
 }
@@ -12,7 +14,7 @@ export interface SidebarLink {
 @Component({
   selector: 'app-sidebar-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, IconComponent],
   template: `
     <div class="layout">
       <aside class="sidebar">
@@ -22,8 +24,12 @@ export interface SidebarLink {
         </div>
         <nav class="nav" [attr.aria-label]="'Menu ' + title()">
           @for (link of links(); track link.path) {
-            <a [routerLink]="link.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!link.exact }">
-              <span class="ico" aria-hidden="true">{{ link.icon }}</span>
+            <a
+              [routerLink]="link.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: !!link.exact }"
+            >
+              <span class="ico"><app-icon [name]="link.icon" size="18" /></span>
               <span>{{ link.label }}</span>
             </a>
           }
@@ -41,8 +47,10 @@ export interface SidebarLink {
       min-height: calc(100vh - var(--header-height));
     }
     .sidebar {
-      background: #fff;
-      border-right: 1px solid var(--color-border);
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      backdrop-filter: blur(var(--glass-blur));
+      border-right: 1px solid var(--glass-border);
       padding: 20px 14px;
       position: sticky;
       top: var(--header-height);
@@ -56,6 +64,9 @@ export interface SidebarLink {
       border-bottom: 1px solid var(--color-border);
       margin-bottom: 10px;
     }
+    .space strong {
+      font-family: var(--font-heading);
+    }
     .space-label {
       font-size: 0.72rem;
       text-transform: uppercase;
@@ -65,30 +76,37 @@ export interface SidebarLink {
     .nav {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
     .nav a {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 10px 12px;
-      border-radius: 10px;
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid transparent;
       color: var(--color-text-muted);
       font-weight: 600;
       white-space: nowrap;
+      transition:
+        background var(--dur-fast),
+        color var(--dur-fast),
+        box-shadow var(--dur-fast);
     }
     .nav a:hover {
-      background: var(--color-bg);
-      color: var(--color-dark);
+      background: var(--glass-bg);
+      color: var(--color-text);
       text-decoration: none;
     }
     .nav a.active {
-      background: var(--color-primary-light);
-      color: #c2410c;
+      background: var(--color-surface);
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: var(--neu-pressed-sm);
+      color: var(--color-link);
     }
     .ico {
       width: 22px;
-      text-align: center;
     }
     .content {
       padding: 24px 28px 48px;
@@ -109,7 +127,7 @@ export interface SidebarLink {
         height: auto;
         padding: 8px 8px 0;
         border-right: none;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--glass-border);
         z-index: 40;
       }
       .space {
@@ -124,13 +142,15 @@ export interface SidebarLink {
       .nav a {
         padding: 8px 12px;
         border-radius: 0;
+        border: none;
         border-bottom: 2px solid transparent;
         font-size: 0.85rem;
       }
       .nav a.active {
         background: none;
-        color: var(--color-primary);
-        border-bottom-color: var(--color-primary);
+        box-shadow: none;
+        color: var(--color-link);
+        border-bottom-color: var(--color-link);
       }
       .content {
         padding: 16px 16px 40px;

@@ -12,7 +12,14 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
 @Component({
   selector: 'app-admin-gyms',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, AlertComponent, LoaderComponent, EmptyStateComponent, ConfirmDialogComponent, RatingStarsComponent],
+  imports: [
+    RouterLink,
+    AlertComponent,
+    LoaderComponent,
+    EmptyStateComponent,
+    ConfirmDialogComponent,
+    RatingStarsComponent,
+  ],
   template: `
     <div class="page-header">
       <h1 class="page-title">Salles</h1>
@@ -23,7 +30,11 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
     } @else if (error()) {
       <app-alert type="error" [message]="error()" />
     } @else if (gyms().length === 0) {
-      <app-empty-state icon="🏢" title="Aucune salle" message="Les gestionnaires n'ont pas encore créé de salle." />
+      <app-empty-state
+        icon="building"
+        title="Aucune salle"
+        message="Les gestionnaires n'ont pas encore créé de salle."
+      />
     } @else {
       <div class="table-wrap">
         <table class="table">
@@ -41,14 +52,22 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
           <tbody>
             @for (g of gyms(); track g.id) {
               <tr>
-                <td><a [routerLink]="['/salles', g.id]"><strong>{{ g.name }}</strong></a></td>
+                <td>
+                  <a [routerLink]="['/salles', g.id]"
+                    ><strong>{{ g.name }}</strong></a
+                  >
+                </td>
                 <td>{{ g.postalCode }} {{ g.city }}</td>
                 <td>{{ g.manager ? g.manager.firstName + ' ' + g.manager.lastName : '–' }}</td>
                 <td>{{ g.courses.length }}</td>
                 <td>{{ g.totalCapacity }}</td>
-                <td><app-rating-stars [rating]="g.averageRating" [count]="g.reviewCount" size="sm" /></td>
+                <td>
+                  <app-rating-stars [rating]="g.averageRating" [count]="g.reviewCount" size="sm" />
+                </td>
                 <td style="text-align: right">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="toDelete.set(g)">Supprimer</button>
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="toDelete.set(g)">
+                    Supprimer
+                  </button>
                 </td>
               </tr>
             }
@@ -60,7 +79,9 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
     @if (toDelete(); as g) {
       <app-confirm-dialog
         title="Supprimer la salle ?"
-        [message]="'La salle « ' + g.name + ' », ses cours et ses séances seront supprimés définitivement.'"
+        [message]="
+          'La salle « ' + g.name + ' », ses cours et ses séances seront supprimés définitivement.'
+        "
         confirmLabel="Supprimer"
         [danger]="true"
         [busy]="busy()"

@@ -11,11 +11,13 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-admin-reviews',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     DatePipe,
     RouterLink,
     AlertComponent,
@@ -31,10 +33,33 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       <h1 class="page-title">Modération des avis</h1>
     </div>
     <div class="tabs">
-      <button type="button" class="tab" [class.active]="status() === ''" (click)="setStatus('')">Tous</button>
-      <button type="button" class="tab" [class.active]="status() === 'en_attente'" (click)="setStatus('en_attente')">En attente</button>
-      <button type="button" class="tab" [class.active]="status() === 'approuve'" (click)="setStatus('approuve')">Approuvés</button>
-      <button type="button" class="tab" [class.active]="status() === 'masque'" (click)="setStatus('masque')">Masqués</button>
+      <button type="button" class="tab" [class.active]="status() === ''" (click)="setStatus('')">
+        Tous
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="status() === 'en_attente'"
+        (click)="setStatus('en_attente')"
+      >
+        En attente
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="status() === 'approuve'"
+        (click)="setStatus('approuve')"
+      >
+        Approuvés
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="status() === 'masque'"
+        (click)="setStatus('masque')"
+      >
+        Masqués
+      </button>
     </div>
 
     @if (loading()) {
@@ -42,7 +67,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
     } @else if (error()) {
       <app-alert type="error" [message]="error()" />
     } @else if (reviews().length === 0) {
-      <app-empty-state icon="⭐" title="Aucun avis" message="Aucun avis ne correspond à ce filtre." />
+      <app-empty-state
+        icon="star"
+        title="Aucun avis"
+        message="Aucun avis ne correspond à ce filtre."
+      />
     } @else {
       <div class="list">
         @for (r of reviews(); track r.id) {
@@ -56,9 +85,14 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
               <div class="muted small">
                 Sur :
                 @if (r.gym) {
-                  <a [routerLink]="['/salles', r.gym.id]">🏢 {{ r.gym.name }}</a>
+                  <a [routerLink]="['/salles', r.gym.id]"
+                    ><app-icon name="building" size="14" /> {{ r.gym.name }}</a
+                  >
                 } @else if (r.coach) {
-                  <a [routerLink]="['/coachs', r.coach.id]">👤 {{ r.coach.firstName }} {{ r.coach.lastName }}</a>
+                  <a [routerLink]="['/coachs', r.coach.id]"
+                    ><app-icon name="user" size="14" /> {{ r.coach.firstName }}
+                    {{ r.coach.lastName }}</a
+                  >
                 }
               </div>
               <app-rating-stars [rating]="r.rating" [showValue]="false" size="sm" />
@@ -68,17 +102,43 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
             </div>
             <div class="actions">
               @if (r.status !== 'approuve') {
-                <button type="button" class="btn btn-primary btn-sm" [disabled]="busyId() === r.id" (click)="moderate(r, 'approuve')">Approuver</button>
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  [disabled]="busyId() === r.id"
+                  (click)="moderate(r, 'approuve')"
+                >
+                  Approuver
+                </button>
               }
               @if (r.status !== 'masque') {
-                <button type="button" class="btn btn-outline btn-sm" [disabled]="busyId() === r.id" (click)="moderate(r, 'masque')">Masquer</button>
+                <button
+                  type="button"
+                  class="btn btn-outline btn-sm"
+                  [disabled]="busyId() === r.id"
+                  (click)="moderate(r, 'masque')"
+                >
+                  Masquer
+                </button>
               }
-              <button type="button" class="btn btn-ghost btn-sm" [disabled]="busyId() === r.id" (click)="toDelete.set(r)">Supprimer</button>
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                [disabled]="busyId() === r.id"
+                (click)="toDelete.set(r)"
+              >
+                Supprimer
+              </button>
             </div>
           </article>
         }
       </div>
-      <app-pagination [page]="page()" [total]="total()" [limit]="limit()" (pageChange)="goTo($event)" />
+      <app-pagination
+        [page]="page()"
+        [total]="total()"
+        [limit]="limit()"
+        (pageChange)="goTo($event)"
+      />
     }
 
     @if (toDelete(); as r) {

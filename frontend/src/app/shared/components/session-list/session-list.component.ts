@@ -2,30 +2,45 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Session } from '../../../core/models';
 import { StatusBadgeComponent } from '../status-badge/status-badge.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-session-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CurrencyPipe, DatePipe, StatusBadgeComponent],
+  imports: [IconComponent, CurrencyPipe, DatePipe, StatusBadgeComponent],
   template: `
     <ul class="list">
       @for (s of sessions(); track s.id) {
-        <li class="list-item session" [class.selected]="s.id === selectedId()" (click)="select.emit(s)">
+        <li
+          class="list-item session"
+          [class.selected]="s.id === selectedId()"
+          (click)="select.emit(s)"
+        >
           <div class="when">
             <span class="day">{{ s.startAt | date: 'EEE d MMM' }}</span>
-            <span class="time">{{ s.startAt | date: 'HH:mm' }} – {{ s.endAt | date: 'HH:mm' }}</span>
+            <span class="time"
+              >{{ s.startAt | date: 'HH:mm' }} – {{ s.endAt | date: 'HH:mm' }}</span
+            >
           </div>
           <div class="info">
             @if (showTitle()) {
               <span class="bold">{{ s.course?.title || 'Séance avec le coach' }}</span>
             }
             @if (s.location) {
-              <span class="muted small">📍 {{ s.location }}</span>
+              <span class="muted small"
+                ><app-icon name="map-pin" size="14" /> {{ s.location }}</span
+              >
             }
             @if (s.course?.gym && showTitle()) {
-              <span class="muted small">🏢 {{ s.course!.gym.name }}</span>
+              <span class="muted small"
+                ><app-icon name="building" size="14" /> {{ s.course!.gym.name }}</span
+              >
             }
-            <span class="small" [class.muted]="s.remainingSeats > 0" [class.full]="s.remainingSeats <= 0">
+            <span
+              class="small"
+              [class.muted]="s.remainingSeats > 0"
+              [class.full]="s.remainingSeats <= 0"
+            >
               {{ seatsLabel(s) }}
             </span>
           </div>
@@ -36,7 +51,9 @@ import { StatusBadgeComponent } from '../status-badge/status-badge.component';
               @if (s.myBookingId) {
                 <span class="badge badge-success">Réservée</span>
               } @else if (s.isBookable) {
-                <button type="button" class="btn btn-primary btn-sm" (click)="onBook($event, s)">Réserver</button>
+                <button type="button" class="btn btn-primary btn-sm" (click)="onBook($event, s)">
+                  Réserver
+                </button>
               }
             }
             @if (s.bookingCount !== undefined) {
@@ -46,7 +63,7 @@ import { StatusBadgeComponent } from '../status-badge/status-badge.component';
         </li>
       } @empty {
         <li class="empty-state">
-          <div class="icon" aria-hidden="true">📅</div>
+          <div class="icon" aria-hidden="true"><app-icon name="calendar" size="14" /></div>
           {{ emptyMessage() }}
         </li>
       }

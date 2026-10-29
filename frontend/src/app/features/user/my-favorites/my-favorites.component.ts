@@ -7,11 +7,19 @@ import { AlertComponent } from '../../../shared/components/alert/alert.component
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-my-favorites',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, AlertComponent, LoaderComponent, EmptyStateComponent, RatingStarsComponent],
+  imports: [
+    IconComponent,
+    RouterLink,
+    AlertComponent,
+    LoaderComponent,
+    EmptyStateComponent,
+    RatingStarsComponent,
+  ],
   template: `
     <div class="container page">
       <div class="page-header">
@@ -27,17 +35,34 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
           <section>
             <h2>Salles ({{ gyms().length }})</h2>
             @if (gyms().length === 0) {
-              <app-empty-state icon="🏢" title="Aucune salle en favori" message="Cliquez sur le cœur d'une salle pour l'ajouter ici." />
+              <app-empty-state
+                icon="building"
+                title="Aucune salle en favori"
+                message="Cliquez sur le cœur d'une salle pour l'ajouter ici."
+              />
             } @else {
               <ul class="list">
                 @for (g of gyms(); track g.id) {
                   <li class="list-item">
                     <div>
                       <a [routerLink]="['/salles', g.id]" class="bold">{{ g.name }}</a>
-                      <div class="muted small">📍 {{ g.city }}</div>
-                      <app-rating-stars [rating]="g.averageRating" [count]="g.reviewCount" size="sm" />
+                      <div class="muted small">
+                        <app-icon name="map-pin" size="14" /> {{ g.city }}
+                      </div>
+                      <app-rating-stars
+                        [rating]="g.averageRating"
+                        [count]="g.reviewCount"
+                        size="sm"
+                      />
                     </div>
-                    <button type="button" class="btn btn-outline btn-sm" [disabled]="busyId() === 'gym-' + g.id" (click)="removeGym(g)">Retirer</button>
+                    <button
+                      type="button"
+                      class="btn btn-outline btn-sm"
+                      [disabled]="busyId() === 'gym-' + g.id"
+                      (click)="removeGym(g)"
+                    >
+                      Retirer
+                    </button>
                   </li>
                 }
               </ul>
@@ -46,17 +71,37 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
           <section>
             <h2>Coachs ({{ coaches().length }})</h2>
             @if (coaches().length === 0) {
-              <app-empty-state icon="👤" title="Aucun coach en favori" message="Cliquez sur le cœur d'un coach pour l'ajouter ici." />
+              <app-empty-state
+                icon="user"
+                title="Aucun coach en favori"
+                message="Cliquez sur le cœur d'un coach pour l'ajouter ici."
+              />
             } @else {
               <ul class="list">
                 @for (c of coaches(); track c.id) {
                   <li class="list-item">
                     <div>
-                      <a [routerLink]="['/coachs', c.id]" class="bold">{{ c.firstName }} {{ c.lastName }}</a>
-                      <div class="muted small">{{ c.specialty || 'Coach' }} · 📍 {{ c.city || '–' }}</div>
-                      <app-rating-stars [rating]="c.averageRating" [count]="c.reviewCount" size="sm" />
+                      <a [routerLink]="['/coachs', c.id]" class="bold"
+                        >{{ c.firstName }} {{ c.lastName }}</a
+                      >
+                      <div class="muted small">
+                        {{ c.specialty || 'Coach' }} · <app-icon name="map-pin" size="14" />
+                        {{ c.city || '–' }}
+                      </div>
+                      <app-rating-stars
+                        [rating]="c.averageRating"
+                        [count]="c.reviewCount"
+                        size="sm"
+                      />
                     </div>
-                    <button type="button" class="btn btn-outline btn-sm" [disabled]="busyId() === 'coach-' + c.id" (click)="removeCoach(c)">Retirer</button>
+                    <button
+                      type="button"
+                      class="btn btn-outline btn-sm"
+                      [disabled]="busyId() === 'coach-' + c.id"
+                      (click)="removeCoach(c)"
+                    >
+                      Retirer
+                    </button>
                   </li>
                 }
               </ul>

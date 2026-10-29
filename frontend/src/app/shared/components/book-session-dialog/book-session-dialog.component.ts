@@ -5,23 +5,35 @@ import { Booking, Session, errorMessage } from '../../../core/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookingService } from '../../../core/services/booking.service';
 import { AlertComponent } from '../alert/alert.component';
+import { IconComponent } from '../icon/icon.component';
 
 /** Modale de confirmation de réservation d'une séance. */
 @Component({
   selector: 'app-book-session-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CurrencyPipe, DatePipe, AlertComponent],
+  imports: [IconComponent, CurrencyPipe, DatePipe, AlertComponent],
   template: `
     <div class="modal-backdrop" (click)="close()">
-      <div class="modal" role="dialog" aria-modal="true" aria-label="Confirmer la réservation" (click)="$event.stopPropagation()">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Confirmer la réservation"
+        (click)="$event.stopPropagation()"
+      >
         <h3 class="modal-title">Confirmer la réservation</h3>
         <div class="summary">
-          <p class="bold" style="margin: 0">{{ session().course?.title || 'Séance avec le coach' }}</p>
+          <p class="bold" style="margin: 0">
+            {{ session().course?.title || 'Séance avec le coach' }}
+          </p>
           <p class="muted" style="margin: 0; text-transform: capitalize">
-            {{ session().startAt | date: 'EEEE d MMMM yyyy' }} · {{ session().startAt | date: 'HH:mm' }} – {{ session().endAt | date: 'HH:mm' }}
+            {{ session().startAt | date: 'EEEE d MMMM yyyy' }} ·
+            {{ session().startAt | date: 'HH:mm' }} – {{ session().endAt | date: 'HH:mm' }}
           </p>
           @if (session().location) {
-            <p class="muted" style="margin: 0">📍 {{ session().location }}</p>
+            <p class="muted" style="margin: 0">
+              <app-icon name="map-pin" size="14" /> {{ session().location }}
+            </p>
           }
           <p style="margin: 8px 0 0">
             <span class="price">{{ session().price | currency: 'EUR' : 'symbol' : '1.0-2' }}</span>
@@ -30,7 +42,9 @@ import { AlertComponent } from '../alert/alert.component';
         </div>
         <app-alert type="error" [message]="error()" />
         <div class="form-actions">
-          <button type="button" class="btn btn-outline" (click)="close()" [disabled]="busy()">Annuler</button>
+          <button type="button" class="btn btn-outline" (click)="close()" [disabled]="busy()">
+            Annuler
+          </button>
           <button type="button" class="btn btn-primary" (click)="confirm()" [disabled]="busy()">
             {{ busy() ? 'Réservation…' : 'Confirmer la réservation' }}
           </button>
@@ -40,7 +54,8 @@ import { AlertComponent } from '../alert/alert.component';
   `,
   styles: `
     .summary {
-      background: var(--color-bg);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 10px;
       padding: 14px;
       margin-bottom: 16px;

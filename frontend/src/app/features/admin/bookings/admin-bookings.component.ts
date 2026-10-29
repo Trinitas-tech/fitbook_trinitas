@@ -14,7 +14,16 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 @Component({
   selector: 'app-admin-bookings',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, FormsModule, AlertComponent, LoaderComponent, EmptyStateComponent, PaginationComponent, StatusBadgeComponent, ConfirmDialogComponent],
+  imports: [
+    DatePipe,
+    FormsModule,
+    AlertComponent,
+    LoaderComponent,
+    EmptyStateComponent,
+    PaginationComponent,
+    StatusBadgeComponent,
+    ConfirmDialogComponent,
+  ],
   template: `
     <div class="page-header">
       <h1 class="page-title">Réservations</h1>
@@ -27,8 +36,21 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
         <option value="annulee">Annulée</option>
         <option value="terminee">Terminée</option>
       </select>
-      <input class="input" type="date" name="date" [(ngModel)]="date" aria-label="Date de la séance" />
-      <input class="input" type="number" min="1" name="userId" [(ngModel)]="userId" placeholder="ID utilisateur" />
+      <input
+        class="input"
+        type="date"
+        name="date"
+        [(ngModel)]="date"
+        aria-label="Date de la séance"
+      />
+      <input
+        class="input"
+        type="number"
+        min="1"
+        name="userId"
+        [(ngModel)]="userId"
+        placeholder="ID utilisateur"
+      />
       <button type="submit" class="btn btn-primary">Filtrer</button>
       <button type="button" class="btn btn-ghost" (click)="reset()">Réinitialiser</button>
     </form>
@@ -38,7 +60,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
     } @else if (error()) {
       <app-alert type="error" [message]="error()" />
     } @else if (bookings().length === 0) {
-      <app-empty-state icon="📅" title="Aucune réservation" message="Aucune réservation ne correspond à ces filtres." />
+      <app-empty-state
+        icon="calendar"
+        title="Aucune réservation"
+        message="Aucune réservation ne correspond à ces filtres."
+      />
     } @else {
       <div class="table-wrap">
         <table class="table">
@@ -63,14 +89,18 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
                 </td>
                 <td>
                   {{ b.session.course?.title || 'Séance coach' }}
-                  <div class="muted small">{{ b.session.course?.gym?.name || b.session.location || '' }}</div>
+                  <div class="muted small">
+                    {{ b.session.course?.gym?.name || b.session.location || '' }}
+                  </div>
                 </td>
                 <td>{{ b.session.startAt | date: 'd MMM yyyy HH:mm' }}</td>
                 <td>{{ b.seats }}</td>
                 <td><app-status-badge kind="booking" [status]="b.status" /></td>
                 <td style="text-align: right">
                   @if (b.status === 'confirmee') {
-                    <button type="button" class="btn btn-outline btn-sm" (click)="toCancel.set(b)">Annuler</button>
+                    <button type="button" class="btn btn-outline btn-sm" (click)="toCancel.set(b)">
+                      Annuler
+                    </button>
                   }
                 </td>
               </tr>
@@ -78,13 +108,24 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
           </tbody>
         </table>
       </div>
-      <app-pagination [page]="page()" [total]="total()" [limit]="limit()" (pageChange)="goTo($event)" />
+      <app-pagination
+        [page]="page()"
+        [total]="total()"
+        [limit]="limit()"
+        (pageChange)="goTo($event)"
+      />
     }
 
     @if (toCancel(); as b) {
       <app-confirm-dialog
         title="Annuler cette réservation ?"
-        [message]="'La réservation de ' + b.user.firstName + ' ' + b.user.lastName + ' sera annulée et la place libérée.'"
+        [message]="
+          'La réservation de ' +
+          b.user.firstName +
+          ' ' +
+          b.user.lastName +
+          ' sera annulée et la place libérée.'
+        "
         confirmLabel="Annuler la réservation"
         [danger]="true"
         [busy]="busy()"
@@ -151,7 +192,9 @@ export class AdminBookingsComponent implements OnInit {
       next: (updated) => {
         this.busy.set(false);
         this.toCancel.set(null);
-        this.bookings.update((list) => list.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)));
+        this.bookings.update((list) =>
+          list.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)),
+        );
         this.toast.success('Réservation annulée.');
       },
       error: (err: unknown) => {
@@ -166,7 +209,12 @@ export class AdminBookingsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     this.admin
-      .bookings({ status: this.status, date: this.date, userId: String(this.userId ?? '').trim(), page: this.page() })
+      .bookings({
+        status: this.status,
+        date: this.date,
+        userId: String(this.userId ?? '').trim(),
+        page: this.page(),
+      })
       .subscribe({
         next: (res) => {
           this.bookings.set(res.items);

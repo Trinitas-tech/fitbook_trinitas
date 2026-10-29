@@ -19,15 +19,43 @@ interface AdminCoach extends CoachDetail {
 @Component({
   selector: 'app-admin-coaches',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CurrencyPipe, RouterLink, AlertComponent, LoaderComponent, EmptyStateComponent, RatingStarsComponent],
+  imports: [
+    CurrencyPipe,
+    RouterLink,
+    AlertComponent,
+    LoaderComponent,
+    EmptyStateComponent,
+    RatingStarsComponent,
+  ],
   template: `
     <div class="page-header">
       <h1 class="page-title">Coachs</h1>
     </div>
     <div class="tabs">
-      <button type="button" class="tab" [class.active]="filter() === 'pending'" (click)="setFilter('pending')">À valider</button>
-      <button type="button" class="tab" [class.active]="filter() === 'validated'" (click)="setFilter('validated')">Validés</button>
-      <button type="button" class="tab" [class.active]="filter() === 'all'" (click)="setFilter('all')">Tous</button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="filter() === 'pending'"
+        (click)="setFilter('pending')"
+      >
+        À valider
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="filter() === 'validated'"
+        (click)="setFilter('validated')"
+      >
+        Validés
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.active]="filter() === 'all'"
+        (click)="setFilter('all')"
+      >
+        Tous
+      </button>
     </div>
 
     @if (loading()) {
@@ -35,7 +63,11 @@ interface AdminCoach extends CoachDetail {
     } @else if (error()) {
       <app-alert type="error" [message]="error()" />
     } @else if (coaches().length === 0) {
-      <app-empty-state icon="🎯" title="Aucun coach" [message]="filter() === 'pending' ? 'Aucun profil en attente de validation.' : null" />
+      <app-empty-state
+        icon="target"
+        title="Aucun coach"
+        [message]="filter() === 'pending' ? 'Aucun profil en attente de validation.' : null"
+      />
     } @else {
       <div class="grid">
         @for (c of coaches(); track c.id) {
@@ -48,7 +80,9 @@ interface AdminCoach extends CoachDetail {
               }
               <div style="flex: 1; min-width: 0">
                 <strong>{{ c.firstName }} {{ c.lastName }}</strong>
-                <div class="muted small">{{ c.specialty || 'Spécialité non renseignée' }} · {{ c.city || 'Ville ?' }}</div>
+                <div class="muted small">
+                  {{ c.specialty || 'Spécialité non renseignée' }} · {{ c.city || 'Ville ?' }}
+                </div>
                 <div class="muted small">
                   @if (c.hourlyRate !== null) {
                     {{ c.hourlyRate | currency: 'EUR' : 'symbol' : '1.0-2' }}/h
@@ -68,9 +102,23 @@ interface AdminCoach extends CoachDetail {
             <div class="actions">
               @if (c.isValidated) {
                 <a [routerLink]="['/coachs', c.id]" class="btn btn-ghost btn-sm">Voir la fiche</a>
-                <button type="button" class="btn btn-outline btn-sm" [disabled]="busyId() === c.id" (click)="validate(c, false)">Retirer la validation</button>
+                <button
+                  type="button"
+                  class="btn btn-outline btn-sm"
+                  [disabled]="busyId() === c.id"
+                  (click)="validate(c, false)"
+                >
+                  Retirer la validation
+                </button>
               } @else {
-                <button type="button" class="btn btn-primary btn-sm" [disabled]="busyId() === c.id" (click)="validate(c, true)">Valider le profil</button>
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  [disabled]="busyId() === c.id"
+                  (click)="validate(c, true)"
+                >
+                  Valider le profil
+                </button>
               }
             </div>
           </article>
@@ -124,7 +172,9 @@ export class AdminCoachesComponent implements OnInit {
     this.admin.validateCoach(coach.id, isValidated).subscribe({
       next: () => {
         this.busyId.set(null);
-        this.toast.success(isValidated ? 'Profil validé : le coach est désormais visible.' : 'Validation retirée.');
+        this.toast.success(
+          isValidated ? 'Profil validé : le coach est désormais visible.' : 'Validation retirée.',
+        );
         this.load();
       },
       error: (err: unknown) => {
@@ -142,7 +192,10 @@ export class AdminCoachesComponent implements OnInit {
     this.admin.coaches(validated).subscribe({
       next: (list) => {
         this.coaches.set(
-          (list as AdminCoach[]).map((c) => ({ ...c, isValidated: c.isValidated ?? (f === 'validated') })),
+          (list as AdminCoach[]).map((c) => ({
+            ...c,
+            isValidated: c.isValidated ?? f === 'validated',
+          })),
         );
         this.loading.set(false);
       },

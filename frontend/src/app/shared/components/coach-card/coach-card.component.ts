@@ -4,16 +4,22 @@ import { RouterLink } from '@angular/router';
 import { CoachCard } from '../../../core/models';
 import { FavoriteButtonComponent } from '../favorite-button/favorite-button.component';
 import { RatingStarsComponent } from '../rating-stars/rating-stars.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-coach-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, FavoriteButtonComponent, RatingStarsComponent],
+  imports: [IconComponent, RouterLink, CurrencyPipe, FavoriteButtonComponent, RatingStarsComponent],
   template: `
     <a class="card card-link coach-card" [routerLink]="['/coachs', coach().id]">
       <div class="top">
         @if (coach().avatarUrl) {
-          <img class="avatar avatar-lg" [src]="coach().avatarUrl" [alt]="fullName()" loading="lazy" />
+          <img
+            class="avatar avatar-lg"
+            [src]="coach().avatarUrl"
+            [alt]="fullName()"
+            loading="lazy"
+          />
         } @else {
           <span class="avatar avatar-lg">{{ initials() }}</span>
         }
@@ -25,7 +31,9 @@ import { RatingStarsComponent } from '../rating-stars/rating-stars.component';
       @if (coach().specialty) {
         <span class="badge badge-primary">{{ coach().specialty }}</span>
       }
-      <p class="muted small">📍 {{ coach().city || 'Ville non renseignée' }}</p>
+      <p class="muted small">
+        <app-icon name="map-pin" size="14" /> {{ coach().city || 'Ville non renseignée' }}
+      </p>
       <app-rating-stars [rating]="coach().averageRating" [count]="coach().reviewCount" size="sm" />
       @if (coach().hourlyRate !== null) {
         <p class="rate">

@@ -1,14 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ToastService } from '../../../core/services/toast.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-toasts',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IconComponent],
   template: `
     <div class="toasts" aria-live="polite">
       @for (t of toast.toasts(); track t.id) {
         <div class="toast toast-{{ t.type }}" (click)="toast.dismiss(t.id)">
-          {{ t.message }}
+          <app-icon [name]="iconFor(t.type)" size="18" />
+          <span>{{ t.message }}</span>
         </div>
       }
     </div>
@@ -28,21 +31,28 @@ import { ToastService } from '../../../core/services/toast.service';
     }
     .toast {
       pointer-events: auto;
-      background: var(--color-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--grad-cta-info);
       color: #fff;
       padding: 12px 18px;
-      border-radius: 10px;
-      box-shadow: var(--shadow-hover);
+      min-height: 44px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: var(--glow-water);
       max-width: 420px;
       font-weight: 500;
       cursor: pointer;
-      animation: slide 0.2s ease-out;
+      animation: slide var(--dur-base) var(--ease-out);
     }
     .toast-success {
-      background: var(--color-success);
+      background: var(--grad-cta-success);
+      box-shadow: var(--glow-nature);
     }
     .toast-error {
-      background: var(--color-danger);
+      background: var(--grad-cta);
+      box-shadow: var(--glow-fire);
     }
     @keyframes slide {
       from {
@@ -68,4 +78,8 @@ import { ToastService } from '../../../core/services/toast.service';
 })
 export class ToastsComponent {
   readonly toast = inject(ToastService);
+
+  iconFor(type: string): string {
+    return type === 'success' ? 'check' : type === 'error' ? 'x' : 'info';
+  }
 }

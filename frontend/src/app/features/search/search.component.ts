@@ -25,6 +25,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { GymCardComponent } from '../../shared/components/gym-card/gym-card.component';
 import { GymMapComponent, MapPosition } from '../../shared/components/gym-map/gym-map.component';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 /** Filtres pilotés par le formulaire. */
 const FORM_KEYS = [
@@ -46,6 +47,7 @@ type ViewMode = 'list' | 'map';
   selector: 'app-search',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     ReactiveFormsModule,
     AlertComponent,
     LoaderComponent,
@@ -150,7 +152,7 @@ type ViewMode = 'list' | 'map';
                   [attr.aria-pressed]="view() === 'list'"
                   (click)="view.set('list')"
                 >
-                  ☰ Liste
+                  <app-icon name="list" size="16" /> Liste
                 </button>
                 <button
                   type="button"
@@ -158,7 +160,7 @@ type ViewMode = 'list' | 'map';
                   [attr.aria-pressed]="view() === 'map'"
                   (click)="view.set('map')"
                 >
-                  🗺 Carte
+                  <app-icon name="map" size="16" /> Carte
                 </button>
               </div>
               <div class="geo">
@@ -166,7 +168,8 @@ type ViewMode = 'list' | 'map';
                   <span
                     class="badge badge-info"
                     title="Latitude {{ pos.lat }}, longitude {{ pos.lng }}"
-                    >📍 Position utilisée · tri par distance</span
+                    ><app-icon name="map-pin" size="14" /> Position utilisée · tri par
+                    distance</span
                   >
                   <button type="button" class="btn btn-ghost btn-sm" (click)="clearPosition()">
                     Retirer la position
@@ -185,7 +188,7 @@ type ViewMode = 'list' | 'map';
                       ></span>
                       Localisation…
                     } @else {
-                      📍 Autour de moi
+                      <app-icon name="map-pin" size="14" /> Autour de moi
                     }
                   </button>
                 }
@@ -232,7 +235,7 @@ type ViewMode = 'list' | 'map';
                     }
                   } @else {
                     <app-empty-state
-                      icon="🗺"
+                      icon="map"
                       title="Aucune salle géolocalisée"
                       message="Aucune salle de ces résultats ne dispose de coordonnées GPS. Passez en vue liste."
                     />
@@ -305,23 +308,30 @@ type ViewMode = 'list' | 'map';
     }
     .segmented {
       display: inline-flex;
-      background: #f1f5f9;
-      border-radius: 10px;
-      padding: 3px;
+      background: var(--color-surface);
+      box-shadow: var(--neu-pressed-sm);
+      border-radius: var(--radius-pill);
+      padding: 4px;
     }
     .segmented button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       border: none;
       background: transparent;
       padding: 6px 14px;
-      border-radius: 8px;
+      min-height: 36px;
+      border-radius: var(--radius-pill);
+      transition:
+        background var(--dur-fast),
+        color var(--dur-fast);
       font-weight: 600;
       font-size: 0.9rem;
       color: var(--color-text-muted);
     }
     .segmented button.active {
-      background: #fff;
-      color: var(--color-dark);
-      box-shadow: var(--shadow);
+      background: var(--grad-water);
+      color: #0f172a;
     }
     .geo {
       display: flex;

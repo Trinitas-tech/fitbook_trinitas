@@ -5,6 +5,7 @@ import { RegisterRole, errorMessage, isApiError } from '../../../core/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { AuthLayoutComponent } from '../auth-layout.component';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 interface RoleOption {
   value: RegisterRole;
@@ -16,22 +17,28 @@ interface RoleOption {
 @Component({
   selector: 'app-register',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AlertComponent, AuthLayoutComponent],
+  imports: [IconComponent, ReactiveFormsModule, RouterLink, AlertComponent, AuthLayoutComponent],
   template: `
     @if (done()) {
       <app-auth-layout title="Vérifiez votre e-mail" [subtitle]="null">
         <div class="text-center">
-          <div style="font-size: 3rem">📬</div>
+          <div style="color: var(--color-link); margin-bottom: 8px">
+            <app-icon name="mail" size="56" />
+          </div>
           <p>
             Votre compte a été créé. Nous avons envoyé un lien de confirmation à
-            <strong>{{ form.controls.email.value }}</strong>. Cliquez dessus pour activer votre compte
-            (le lien expire dans 24 heures).
+            <strong>{{ form.controls.email.value }}</strong
+            >. Cliquez dessus pour activer votre compte (le lien expire dans 24 heures).
           </p>
           <a routerLink="/connexion" class="btn btn-primary">Aller à la connexion</a>
         </div>
       </app-auth-layout>
     } @else {
-      <app-auth-layout title="Créer un compte" subtitle="Rejoignez FitBook en quelques secondes." [wide]="true">
+      <app-auth-layout
+        title="Créer un compte"
+        subtitle="Rejoignez FitBook en quelques secondes."
+        [wide]="true"
+      >
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <app-alert type="error" [message]="error()" />
 
@@ -44,7 +51,9 @@ interface RoleOption {
                 [class.selected]="form.controls.role.value === r.value"
                 (click)="form.controls.role.setValue(r.value)"
               >
-                <span class="role-icon" aria-hidden="true">{{ r.icon }}</span>
+                <span class="role-icon" aria-hidden="true"
+                  ><app-icon [name]="r.icon" size="28"
+                /></span>
                 <strong>{{ r.label }}</strong>
                 <span class="muted small">{{ r.description }}</span>
               </button>
@@ -54,14 +63,24 @@ interface RoleOption {
           <div class="form-row">
             <div class="field">
               <label class="label" for="firstName">Prénom</label>
-              <input id="firstName" class="input" formControlName="firstName" autocomplete="given-name" />
+              <input
+                id="firstName"
+                class="input"
+                formControlName="firstName"
+                autocomplete="given-name"
+              />
               @if (showError('firstName')) {
                 <span class="field-error">Le prénom est obligatoire.</span>
               }
             </div>
             <div class="field">
               <label class="label" for="lastName">Nom</label>
-              <input id="lastName" class="input" formControlName="lastName" autocomplete="family-name" />
+              <input
+                id="lastName"
+                class="input"
+                formControlName="lastName"
+                autocomplete="family-name"
+              />
               @if (showError('lastName')) {
                 <span class="field-error">Le nom est obligatoire.</span>
               }
@@ -69,7 +88,13 @@ interface RoleOption {
           </div>
           <div class="field">
             <label class="label" for="email">Adresse e-mail</label>
-            <input id="email" type="email" class="input" formControlName="email" autocomplete="email" />
+            <input
+              id="email"
+              type="email"
+              class="input"
+              formControlName="email"
+              autocomplete="email"
+            />
             @if (showError('email')) {
               <span class="field-error">Saisissez une adresse e-mail valide.</span>
             }
@@ -79,7 +104,13 @@ interface RoleOption {
           </div>
           <div class="field">
             <label class="label" for="password">Mot de passe</label>
-            <input id="password" type="password" class="input" formControlName="password" autocomplete="new-password" />
+            <input
+              id="password"
+              type="password"
+              class="input"
+              formControlName="password"
+              autocomplete="new-password"
+            />
             <span class="hint">8 caractères minimum.</span>
             @if (showError('password')) {
               <span class="field-error">Le mot de passe doit contenir au moins 8 caractères.</span>
@@ -87,7 +118,13 @@ interface RoleOption {
           </div>
           <div class="field">
             <label class="label" for="confirm">Confirmer le mot de passe</label>
-            <input id="confirm" type="password" class="input" formControlName="confirm" autocomplete="new-password" />
+            <input
+              id="confirm"
+              type="password"
+              class="input"
+              formControlName="confirm"
+              autocomplete="new-password"
+            />
             @if (form.controls.confirm.touched && form.hasError('mismatch')) {
               <span class="field-error">Les mots de passe ne correspondent pas.</span>
             }
@@ -117,20 +154,24 @@ interface RoleOption {
       gap: 4px;
       text-align: center;
       padding: 16px 10px;
-      border: 2px solid var(--color-border);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: var(--radius);
-      background: #fff;
+      background: var(--color-surface);
+      box-shadow: var(--neu-raised-sm);
+      color: var(--color-text);
       transition: all 0.15s;
     }
     .role:hover {
-      border-color: #fdba74;
+      border-color: var(--color-link);
     }
     .role.selected {
-      border-color: var(--color-primary);
-      background: #fff7ed;
+      border-color: var(--color-link);
+      color: var(--color-link);
+      box-shadow: var(--neu-pressed-sm);
     }
     .role-icon {
-      font-size: 1.8rem;
+      display: inline-flex;
+      color: var(--color-link);
     }
     @media (max-width: 768px) {
       .roles {
@@ -152,9 +193,9 @@ export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
 
   readonly roles: RoleOption[] = [
-    { value: 'user', label: 'Sportif', icon: '🏃', description: 'Je réserve des séances' },
-    { value: 'coach', label: 'Coach', icon: '🎯', description: 'Je propose mes séances' },
-    { value: 'manager', label: 'Gestionnaire', icon: '🏢', description: 'Je gère une salle' },
+    { value: 'user', label: 'Sportif', icon: 'activity', description: 'Je réserve des séances' },
+    { value: 'coach', label: 'Coach', icon: 'target', description: 'Je propose mes séances' },
+    { value: 'manager', label: 'Gestionnaire', icon: 'building', description: 'Je gère une salle' },
   ];
 
   readonly form = this.fb.nonNullable.group(

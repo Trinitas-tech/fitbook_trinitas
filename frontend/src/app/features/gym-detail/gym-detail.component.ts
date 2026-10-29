@@ -20,11 +20,13 @@ import { RatingStarsComponent } from '../../shared/components/rating-stars/ratin
 import { ReviewFormComponent } from '../../shared/components/review-form/review-form.component';
 import { ReviewListComponent } from '../../shared/components/review-list/review-list.component';
 import { WeekCalendarComponent } from '../../shared/components/week-calendar/week-calendar.component';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-gym-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     RouterLink,
     AlertComponent,
     LoaderComponent,
@@ -48,14 +50,17 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
           @if (g.imageUrl) {
             <img class="hero-img" [src]="g.imageUrl" [alt]="g.name" />
           } @else {
-            <div class="hero-img placeholder" aria-hidden="true">🏋️</div>
+            <div class="hero-img placeholder" aria-hidden="true">
+              <app-icon name="dumbbell" size="40" />
+            </div>
           }
           <div class="hero-body">
             <div class="flex between flex-wrap">
               <div>
                 <h1 style="margin-bottom: 4px">{{ g.name }}</h1>
                 <p class="muted" style="margin: 0">
-                  📍 {{ g.address }}, {{ g.postalCode }} {{ g.city }}
+                  <app-icon name="map-pin" size="14" /> {{ g.address }}, {{ g.postalCode }}
+                  {{ g.city }}
                 </p>
               </div>
               <app-favorite-button
@@ -68,9 +73,12 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
             <div class="flex flex-wrap mt-16" style="gap: 16px">
               <app-rating-stars [rating]="g.averageRating" [count]="g.reviewCount" />
               @if (g.phone) {
-                <span class="muted">📞 {{ g.phone }}</span>
+                <span class="muted"><app-icon name="phone" size="14" /> {{ g.phone }}</span>
               }
-              <span class="muted">👥 Capacité : {{ g.totalCapacity }} personnes</span>
+              <span class="muted"
+                ><app-icon name="users" size="14" /> Capacité :
+                {{ g.totalCapacity }} personnes</span
+              >
             </div>
             @if (g.activities.length) {
               <div class="flex flex-wrap mt-16">
@@ -181,7 +189,8 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
       align-items: center;
       justify-content: center;
       font-size: 4rem;
-      background: linear-gradient(135deg, #ffedd5, #fdba74);
+      background: var(--grad-fire);
+      color: #0f172a;
     }
     .hero-body {
       padding: 24px;

@@ -17,6 +17,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 type Scope = 'upcoming' | 'past';
 
@@ -24,6 +25,7 @@ type Scope = 'upcoming' | 'past';
   selector: 'app-my-bookings',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     CurrencyPipe,
     DatePipe,
     RouterLink,
@@ -67,7 +69,7 @@ type Scope = 'upcoming' | 'past';
         <app-alert type="error" [message]="error()" />
       } @else if (bookings().length === 0) {
         <app-empty-state
-          icon="📅"
+          icon="calendar"
           [title]="
             scope() === 'upcoming' ? 'Aucune réservation à venir' : 'Aucune réservation passée'
           "
@@ -102,9 +104,9 @@ type Scope = 'upcoming' | 'past';
               <p class="muted" style="margin: 0">
                 {{ b.session.startAt | date: 'HH:mm' }} – {{ b.session.endAt | date: 'HH:mm' }}
                 @if (b.session.course?.gym) {
-                  · 🏢 {{ b.session.course!.gym.name }}
+                  · <app-icon name="building" size="14" /> {{ b.session.course!.gym.name }}
                 } @else if (b.session.location) {
-                  · 📍 {{ b.session.location }}
+                  · <app-icon name="map-pin" size="14" /> {{ b.session.location }}
                 }
               </p>
               <p class="muted small" style="margin: 4px 0 0">
@@ -210,7 +212,8 @@ type Scope = 'upcoming' | 'past';
     }
     .qr {
       margin-top: 12px;
-      background: var(--color-bg);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 10px;
       padding: 10px 12px;
       display: flex;

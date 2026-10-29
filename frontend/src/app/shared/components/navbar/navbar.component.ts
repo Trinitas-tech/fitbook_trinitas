@@ -1,16 +1,24 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-navbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, IconComponent],
   template: `
     <header class="header">
       <div class="container inner">
         <a routerLink="/" class="logo" aria-label="FitBook – accueil">
-          <span class="logo-mark">F</span>
+          <span class="logo-mark" aria-hidden="true"><app-icon name="flame" size="18" /></span>
           <span>FitBook</span>
         </a>
 
@@ -25,14 +33,21 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="right">
           @if (auth.currentUser(); as user) {
             <div class="menu-wrap">
-              <button type="button" class="user-btn" (click)="toggle()" [attr.aria-expanded]="open()">
+              <button
+                type="button"
+                class="user-btn"
+                (click)="toggle()"
+                [attr.aria-expanded]="open()"
+                aria-haspopup="menu"
+                aria-label="Menu du compte"
+              >
                 @if (user.avatarUrl) {
                   <img class="avatar" [src]="user.avatarUrl" [alt]="user.firstName" />
                 } @else {
                   <span class="avatar">{{ auth.initials() }}</span>
                 }
                 <span class="hide-mobile name">{{ user.firstName }}</span>
-                <span class="hide-mobile caret">▾</span>
+                <span class="hide-mobile caret"><app-icon name="chevron-down" size="16" /></span>
               </button>
               @if (open()) {
                 <div class="menu" role="menu">
@@ -44,15 +59,21 @@ import { AuthService } from '../../../core/services/auth.service';
                     <a routerLink="/admin" role="menuitem" (click)="close()">Administration</a>
                   }
                   @if (auth.isManager()) {
-                    <a routerLink="/gestionnaire" role="menuitem" (click)="close()">Espace gestionnaire</a>
+                    <a routerLink="/gestionnaire" role="menuitem" (click)="close()"
+                      >Espace gestionnaire</a
+                    >
                   }
                   @if (auth.isCoach()) {
                     <a routerLink="/coach" role="menuitem" (click)="close()">Espace coach</a>
                   }
-                  <a routerLink="/mes-reservations" role="menuitem" (click)="close()">Mes réservations</a>
+                  <a routerLink="/mes-reservations" role="menuitem" (click)="close()"
+                    >Mes réservations</a
+                  >
                   <a routerLink="/mes-favoris" role="menuitem" (click)="close()">Mes favoris</a>
                   <a routerLink="/profil" role="menuitem" (click)="close()">Mon profil</a>
-                  <button type="button" role="menuitem" class="logout" (click)="logout()">Déconnexion</button>
+                  <button type="button" role="menuitem" class="logout" (click)="logout()">
+                    Déconnexion
+                  </button>
                 </div>
               }
             </div>
@@ -69,8 +90,11 @@ import { AuthService } from '../../../core/services/auth.service';
       position: sticky;
       top: 0;
       z-index: 50;
-      background: #fff;
-      border-bottom: 1px solid var(--color-border);
+      background: var(--glass-bg-strong);
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      backdrop-filter: blur(var(--glass-blur));
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
       height: var(--header-height);
     }
     .inner {
@@ -84,23 +108,25 @@ import { AuthService } from '../../../core/services/auth.service';
       display: flex;
       align-items: center;
       gap: 8px;
-      font-weight: 800;
-      font-size: 1.25rem;
-      color: var(--color-dark);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--color-text);
+      letter-spacing: -0.01em;
     }
     .logo:hover {
       text-decoration: none;
     }
     .logo-mark {
-      width: 32px;
-      height: 32px;
-      border-radius: 9px;
-      background: var(--color-primary);
-      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      background: var(--grad-fire);
+      color: #0f172a;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
+      box-shadow: var(--glow-fire);
     }
     .links {
       display: flex;
@@ -111,11 +137,20 @@ import { AuthService } from '../../../core/services/auth.service';
     .links a {
       color: var(--color-text-muted);
       font-weight: 600;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+      transition:
+        color var(--dur-fast),
+        border-color var(--dur-fast);
     }
     .links a:hover,
     .links a.active {
-      color: var(--color-primary);
+      color: var(--color-link);
       text-decoration: none;
+    }
+    .links a.active {
+      border-image: var(--grad-water) 1;
+      border-bottom: 2px solid;
     }
     .right {
       display: flex;
@@ -130,29 +165,47 @@ import { AuthService } from '../../../core/services/auth.service';
       align-items: center;
       gap: 8px;
       background: none;
-      border: none;
+      border: 1px solid transparent;
       padding: 4px;
-      border-radius: 999px;
+      min-height: 44px;
+      border-radius: var(--radius-pill);
       font-weight: 600;
+      transition: box-shadow var(--dur-fast);
     }
-    .user-btn:hover {
-      background: var(--color-bg);
+    .user-btn:hover,
+    .user-btn[aria-expanded='true'] {
+      box-shadow: var(--neu-raised-sm);
+      border-color: rgba(255, 255, 255, 0.5);
     }
     .caret {
       color: var(--color-text-muted);
+      display: inline-flex;
     }
     .menu {
       position: absolute;
       right: 0;
       top: calc(100% + 8px);
-      background: #fff;
+      background: var(--glass-bg-strong);
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      backdrop-filter: blur(var(--glass-blur));
       border-radius: var(--radius);
-      box-shadow: var(--shadow-hover);
-      border: 1px solid var(--color-border);
+      box-shadow: var(--glass-shadow-hover);
+      border: 1px solid var(--glass-border);
       min-width: 240px;
       display: flex;
       flex-direction: column;
       padding: 6px;
+      animation: menu-in var(--dur-base) var(--ease-out);
+    }
+    @keyframes menu-in {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
     }
     .menu-head {
       display: flex;
@@ -163,24 +216,33 @@ import { AuthService } from '../../../core/services/auth.service';
     }
     .menu a,
     .menu .logout {
-      padding: 9px 12px;
-      border-radius: 8px;
-      color: var(--color-dark);
+      padding: 10px 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+      color: var(--color-text);
       text-align: left;
       background: none;
       border: none;
       font-weight: 500;
+      transition: background var(--dur-fast);
     }
     .menu a:hover,
     .menu .logout:hover {
-      background: var(--color-bg);
+      background: var(--color-info-light);
+      color: var(--color-link);
       text-decoration: none;
     }
     .menu .logout {
       color: var(--color-danger);
       border-top: 1px solid var(--color-border);
       margin-top: 6px;
-      border-radius: 0 0 8px 8px;
+      border-radius: 0 0 10px 10px;
+    }
+    .menu .logout:hover {
+      background: var(--color-danger-light);
+      color: var(--color-danger);
     }
   `,
 })

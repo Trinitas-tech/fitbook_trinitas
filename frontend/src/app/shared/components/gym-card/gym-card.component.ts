@@ -4,18 +4,21 @@ import { RouterLink } from '@angular/router';
 import { GymCard } from '../../../core/models';
 import { FavoriteButtonComponent } from '../favorite-button/favorite-button.component';
 import { RatingStarsComponent } from '../rating-stars/rating-stars.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-gym-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, RouterLink, FavoriteButtonComponent, RatingStarsComponent],
+  imports: [IconComponent, DecimalPipe, RouterLink, FavoriteButtonComponent, RatingStarsComponent],
   template: `
     <a class="card card-link gym-card" [routerLink]="['/salles', gym().id]">
       <div class="media">
         @if (gym().imageUrl) {
           <img class="card-img" [src]="gym().imageUrl" [alt]="gym().name" loading="lazy" />
         } @else {
-          <div class="card-img-placeholder" aria-hidden="true">🏋️</div>
+          <div class="card-img-placeholder" aria-hidden="true">
+            <app-icon name="dumbbell" size="40" />
+          </div>
         }
         <div class="fav">
           <app-favorite-button type="gym" [id]="gym().id" [isFavorite]="gym().isFavorite" />
@@ -24,7 +27,7 @@ import { RatingStarsComponent } from '../rating-stars/rating-stars.component';
       <div class="body">
         <h3 class="title">{{ gym().name }}</h3>
         <p class="muted small location">
-          <span>📍 {{ gym().city }} {{ gym().postalCode }}</span>
+          <span><app-icon name="map-pin" size="14" /> {{ gym().city }} {{ gym().postalCode }}</span>
           @if (gym().distanceKm !== null && gym().distanceKm !== undefined) {
             <span class="badge badge-primary distance"
               >à {{ gym().distanceKm | number: '1.0-1' }} km</span

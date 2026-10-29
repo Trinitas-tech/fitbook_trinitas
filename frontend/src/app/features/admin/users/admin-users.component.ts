@@ -14,7 +14,15 @@ const LIMIT = 20;
 @Component({
   selector: 'app-admin-users',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, FormsModule, ReactiveFormsModule, AlertComponent, LoaderComponent, EmptyStateComponent, PaginationComponent],
+  imports: [
+    DatePipe,
+    FormsModule,
+    ReactiveFormsModule,
+    AlertComponent,
+    LoaderComponent,
+    EmptyStateComponent,
+    PaginationComponent,
+  ],
   template: `
     <div class="page-header">
       <h1 class="page-title">Utilisateurs</h1>
@@ -36,7 +44,11 @@ const LIMIT = 20;
     } @else if (error()) {
       <app-alert type="error" [message]="error()" />
     } @else if (users().length === 0) {
-      <app-empty-state icon="👥" title="Aucun utilisateur" message="Aucun utilisateur ne correspond à ces critères." />
+      <app-empty-state
+        icon="users"
+        title="Aucun utilisateur"
+        message="Aucun utilisateur ne correspond à ces critères."
+      />
     } @else {
       <div class="table-wrap">
         <table class="table">
@@ -53,11 +65,15 @@ const LIMIT = 20;
           <tbody>
             @for (u of users(); track u.id) {
               <tr>
-                <td><strong>{{ u.firstName }} {{ u.lastName }}</strong></td>
+                <td>
+                  <strong>{{ u.firstName }} {{ u.lastName }}</strong>
+                </td>
                 <td>{{ u.email }}</td>
                 <td>
                   @for (r of u.roles; track r) {
-                    <span class="badge badge-primary" style="margin-right: 4px">{{ roleLabels[r] }}</span>
+                    <span class="badge badge-primary" style="margin-right: 4px">{{
+                      roleLabels[r]
+                    }}</span>
                   }
                 </td>
                 <td>
@@ -71,19 +87,32 @@ const LIMIT = 20;
                 </td>
                 <td>{{ u.createdAt | date: 'd MMM yyyy' }}</td>
                 <td style="text-align: right">
-                  <button type="button" class="btn btn-outline btn-sm" (click)="edit(u)">Modifier</button>
+                  <button type="button" class="btn btn-outline btn-sm" (click)="edit(u)">
+                    Modifier
+                  </button>
                 </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
-      <app-pagination [page]="page()" [total]="total()" [limit]="limit" (pageChange)="goTo($event)" />
+      <app-pagination
+        [page]="page()"
+        [total]="total()"
+        [limit]="limit"
+        (pageChange)="goTo($event)"
+      />
     }
 
     @if (editing(); as u) {
       <div class="modal-backdrop" (click)="closeEdit()">
-        <form class="modal" [formGroup]="form" (ngSubmit)="save(u)" (click)="$event.stopPropagation()" novalidate>
+        <form
+          class="modal"
+          [formGroup]="form"
+          (ngSubmit)="save(u)"
+          (click)="$event.stopPropagation()"
+          novalidate
+        >
           <h3 class="modal-title">Modifier {{ u.email }}</h3>
           <app-alert type="error" [message]="modalError()" />
           <div class="form-row">
@@ -101,7 +130,11 @@ const LIMIT = 20;
             <div class="flex flex-wrap">
               @for (r of roles; track r) {
                 <label class="checkbox">
-                  <input type="checkbox" [checked]="selectedRoles().includes(r)" (change)="toggleRole(r)" />
+                  <input
+                    type="checkbox"
+                    [checked]="selectedRoles().includes(r)"
+                    (change)="toggleRole(r)"
+                  />
                   {{ roleLabels[r] }}
                 </label>
               }
@@ -111,11 +144,22 @@ const LIMIT = 20;
             }
           </div>
           <div class="field">
-            <label class="checkbox"><input type="checkbox" formControlName="isActive" /> Compte actif (peut se connecter)</label>
+            <label class="checkbox"
+              ><input type="checkbox" formControlName="isActive" /> Compte actif (peut se
+              connecter)</label
+            >
           </div>
           <div class="form-actions">
-            <button type="button" class="btn btn-outline" (click)="closeEdit()" [disabled]="busy()">Annuler</button>
-            <button type="submit" class="btn btn-primary" [disabled]="busy() || selectedRoles().length === 0">{{ busy() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+            <button type="button" class="btn btn-outline" (click)="closeEdit()" [disabled]="busy()">
+              Annuler
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="busy() || selectedRoles().length === 0"
+            >
+              {{ busy() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
           </div>
         </form>
       </div>
@@ -181,7 +225,11 @@ export class AdminUsersComponent implements OnInit {
     this.editing.set(user);
     this.selectedRoles.set([...user.roles]);
     this.modalError.set(null);
-    this.form.reset({ firstName: user.firstName, lastName: user.lastName, isActive: user.isActive !== false });
+    this.form.reset({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isActive: user.isActive !== false,
+    });
   }
 
   closeEdit(): void {
@@ -191,7 +239,9 @@ export class AdminUsersComponent implements OnInit {
   }
 
   toggleRole(role: Role): void {
-    this.selectedRoles.update((list) => (list.includes(role) ? list.filter((r) => r !== role) : [...list, role]));
+    this.selectedRoles.update((list) =>
+      list.includes(role) ? list.filter((r) => r !== role) : [...list, role],
+    );
   }
 
   save(user: User): void {
@@ -203,12 +253,19 @@ export class AdminUsersComponent implements OnInit {
     this.busy.set(true);
     this.modalError.set(null);
     this.admin
-      .updateUser(user.id, { roles: this.selectedRoles(), isActive: v.isActive, firstName: v.firstName.trim(), lastName: v.lastName.trim() })
+      .updateUser(user.id, {
+        roles: this.selectedRoles(),
+        isActive: v.isActive,
+        firstName: v.firstName.trim(),
+        lastName: v.lastName.trim(),
+      })
       .subscribe({
         next: (updated) => {
           this.busy.set(false);
           this.editing.set(null);
-          this.users.update((list) => list.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)));
+          this.users.update((list) =>
+            list.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)),
+          );
           this.toast.success('Utilisateur mis à jour.');
         },
         error: (err: unknown) => {
@@ -221,16 +278,18 @@ export class AdminUsersComponent implements OnInit {
   private load(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.admin.users({ q: this.q.trim(), role: this.role, page: this.page(), limit: LIMIT }).subscribe({
-      next: (res) => {
-        this.users.set(res.items);
-        this.total.set(res.total);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        this.error.set(errorMessage(err));
-        this.loading.set(false);
-      },
-    });
+    this.admin
+      .users({ q: this.q.trim(), role: this.role, page: this.page(), limit: LIMIT })
+      .subscribe({
+        next: (res) => {
+          this.users.set(res.items);
+          this.total.set(res.total);
+          this.loading.set(false);
+        },
+        error: (err: unknown) => {
+          this.error.set(errorMessage(err));
+          this.loading.set(false);
+        },
+      });
   }
 }

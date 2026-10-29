@@ -1,5 +1,13 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Booking, CourseDetail, LEVEL_LABELS, Session, errorMessage } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
@@ -11,11 +19,13 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
 import { ReviewFormComponent } from '../../shared/components/review-form/review-form.component';
 import { SessionListComponent } from '../../shared/components/session-list/session-list.component';
 import { WeekCalendarComponent } from '../../shared/components/week-calendar/week-calendar.component';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-course-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     CurrencyPipe,
     DatePipe,
     RouterLink,
@@ -38,24 +48,38 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
           @if (c.imageUrl) {
             <img class="header-img" [src]="c.imageUrl" [alt]="c.title" />
           } @else {
-            <div class="header-img placeholder" aria-hidden="true">{{ c.activity.icon || '🏃' }}</div>
+            <div class="header-img placeholder" aria-hidden="true">
+              @if (c.activity.icon) {
+                {{ c.activity.icon }}
+              } @else {
+                <app-icon name="activity" size="56" />
+              }
+            </div>
           }
           <div class="header-body">
             <div class="flex flex-wrap">
               <span class="badge badge-primary">{{ c.activity.name }}</span>
               <span class="badge">{{ levelLabel(c.level) }}</span>
-              <span class="badge">⏱ {{ c.durationMinutes }} min</span>
-              <span class="badge">👥 {{ c.capacity }} places</span>
+              <span class="badge"
+                ><app-icon name="timer" size="14" /> {{ c.durationMinutes }} min</span
+              >
+              <span class="badge"><app-icon name="users" size="14" /> {{ c.capacity }} places</span>
             </div>
             <h1 style="margin: 10px 0 4px">{{ c.title }}</h1>
             <p class="muted" style="margin: 0">
-              🏢 <a [routerLink]="['/salles', c.gym.id]">{{ c.gym.name }}</a> · {{ c.gym.city }}
+              <app-icon name="building" size="14" />
+              <a [routerLink]="['/salles', c.gym.id]">{{ c.gym.name }}</a> · {{ c.gym.city }}
               @if (c.coach) {
-                · 👤 <a [routerLink]="['/coachs', c.coach.id]">{{ c.coach.firstName }} {{ c.coach.lastName }}</a>
+                · <app-icon name="user" size="14" />
+                <a [routerLink]="['/coachs', c.coach.id]"
+                  >{{ c.coach.firstName }} {{ c.coach.lastName }}</a
+                >
               }
             </p>
             <p class="mt-16" style="margin-bottom: 0">
-              <span class="price" style="font-size: 1.4rem">{{ c.price | currency: 'EUR' : 'symbol' : '1.0-2' }}</span>
+              <span class="price" style="font-size: 1.4rem">{{
+                c.price | currency: 'EUR' : 'symbol' : '1.0-2'
+              }}</span>
               <span class="muted"> / séance</span>
             </p>
           </div>
@@ -108,15 +132,24 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
           <div class="fixed-bar hide-desktop">
             <div>
               <strong>{{ s.startAt | date: 'EEE d MMM, HH:mm' }}</strong>
-              <span class="muted small">{{ s.remainingSeats }} place(s) · {{ s.price | currency: 'EUR' : 'symbol' : '1.0-2' }}</span>
+              <span class="muted small"
+                >{{ s.remainingSeats }} place(s) ·
+                {{ s.price | currency: 'EUR' : 'symbol' : '1.0-2' }}</span
+              >
             </div>
-            <button type="button" class="btn btn-primary" (click)="selected.set(s)">Réserver</button>
+            <button type="button" class="btn btn-primary" (click)="selected.set(s)">
+              Réserver
+            </button>
           </div>
         }
       }
 
       @if (selected(); as s) {
-        <app-book-session-dialog [session]="s" (booked)="onBooked($event)" (cancelled)="selected.set(null)" />
+        <app-book-session-dialog
+          [session]="s"
+          (booked)="onBooked($event)"
+          (cancelled)="selected.set(null)"
+        />
       }
     </div>
   `,
@@ -138,7 +171,8 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
       align-items: center;
       justify-content: center;
       font-size: 4rem;
-      background: linear-gradient(135deg, #ffedd5, #fdba74);
+      background: var(--grad-fire);
+      color: #0f172a;
     }
     .header-body {
       padding: 24px;
@@ -166,8 +200,10 @@ import { WeekCalendarComponent } from '../../shared/components/week-calendar/wee
         left: 0;
         right: 0;
         bottom: var(--bottom-tabs-height);
-        background: #fff;
-        border-top: 1px solid var(--color-border);
+        background: var(--glass-bg-strong);
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        backdrop-filter: blur(var(--glass-blur));
+        border-top: 1px solid var(--glass-border);
         padding: 12px 16px;
         justify-content: space-between;
         align-items: center;
@@ -214,7 +250,10 @@ export class CourseDetailComponent implements OnInit {
   });
 
   readonly firstBookable = computed(
-    () => this.sortedSessions().find((s) => s.isBookable && !s.myBookingId && new Date(s.startAt) > new Date()) ?? null,
+    () =>
+      this.sortedSessions().find(
+        (s) => s.isBookable && !s.myBookingId && new Date(s.startAt) > new Date(),
+      ) ?? null,
   );
 
   ngOnInit(): void {
@@ -259,7 +298,9 @@ export class CourseDetailComponent implements OnInit {
 
   /** Se positionne sur la semaine de la séance demandée ou de la prochaine séance. */
   private initialWeek(c: CourseDetail): void {
-    const wanted = this.seance() ? c.sessions.find((s) => s.id === Number(this.seance())) : undefined;
+    const wanted = this.seance()
+      ? c.sessions.find((s) => s.id === Number(this.seance()))
+      : undefined;
     const target = wanted ?? this.firstBookable() ?? this.sortedSessions()[0];
     if (target) {
       this.weekStart.set(startOfWeek(new Date(target.startAt)));

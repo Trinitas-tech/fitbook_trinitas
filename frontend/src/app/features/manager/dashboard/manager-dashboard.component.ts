@@ -1,5 +1,12 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { BookingWithUser, GymStats, Session, errorMessage } from '../../../core/models';
 import { ManagerService } from '../../../core/services/manager.service';
@@ -30,7 +37,12 @@ import { ManagerGymStore } from '../manager-gym.store';
       @if (store.gyms().length > 1) {
         <label class="flex">
           <span class="label">Salle :</span>
-          <select class="input" style="width: auto" [value]="store.selectedGymId()" (change)="selectGym($event)">
+          <select
+            class="input"
+            style="width: auto"
+            [value]="store.selectedGymId()"
+            (change)="selectGym($event)"
+          >
             @for (g of store.gyms(); track g.id) {
               <option [value]="g.id">{{ g.name }}</option>
             }
@@ -44,8 +56,14 @@ import { ManagerGymStore } from '../manager-gym.store';
     } @else if (error()) {
       <app-alert type="error" [message]="error()" />
     } @else if (store.gyms().length === 0) {
-      <app-empty-state icon="🏢" title="Aucune salle" message="Créez votre première salle pour commencer.">
-        <a routerLink="/gestionnaire/salles/nouvelle" class="btn btn-primary btn-sm mt-16">Créer une salle</a>
+      <app-empty-state
+        icon="building"
+        title="Aucune salle"
+        message="Créez votre première salle pour commencer."
+      >
+        <a routerLink="/gestionnaire/salles/nouvelle" class="btn btn-primary btn-sm mt-16"
+          >Créer une salle</a
+        >
       </app-empty-state>
     } @else if (store.selectedGym(); as gym) {
       <p class="muted">
@@ -71,7 +89,8 @@ import { ManagerGymStore } from '../manager-gym.store';
           <div class="kpi-label">Note moyenne</div>
           <div class="kpi-value">
             @if (stats()?.averageRating != null) {
-              {{ stats()!.averageRating | number: '1.1-1' }} <span style="font-size: 1rem; color: #f59e0b">★</span>
+              {{ stats()!.averageRating | number: '1.1-1' }}
+              <span style="font-size: 1rem; color: var(--color-star)">★</span>
             } @else {
               –
             }
@@ -82,10 +101,18 @@ import { ManagerGymStore } from '../manager-gym.store';
       <section class="section">
         <div class="section-header">
           <h2 class="section-title">Séances de la semaine</h2>
-          <a [routerLink]="['/gestionnaire/salles', gym.id, 'reservations']">Gérer les réservations →</a>
+          <a [routerLink]="['/gestionnaire/salles', gym.id, 'reservations']"
+            >Gérer les réservations →</a
+          >
         </div>
         <app-alert type="error" [message]="sessionsError()" />
-        <app-week-calendar [sessions]="sessions()" [cursor]="weekStart()" [loading]="sessionsLoading()" (cursorChange)="changeWeek($event)" (sessionClick)="openSession($event)" />
+        <app-week-calendar
+          [sessions]="sessions()"
+          [cursor]="weekStart()"
+          [loading]="sessionsLoading()"
+          (cursorChange)="changeWeek($event)"
+          (sessionClick)="openSession($event)"
+        />
       </section>
 
       <section class="section">
@@ -151,7 +178,9 @@ export class ManagerDashboardComponent implements OnInit {
   });
 
   readonly latestBookings = computed(() =>
-    [...this.bookings()].sort((a, b) => new Date(b.bookedAt).getTime() - new Date(a.bookedAt).getTime()).slice(0, 8),
+    [...this.bookings()]
+      .sort((a, b) => new Date(b.bookedAt).getTime() - new Date(a.bookedAt).getTime())
+      .slice(0, 8),
   );
 
   ngOnInit(): void {
@@ -201,10 +230,12 @@ export class ManagerDashboardComponent implements OnInit {
     this.loadSessions();
     const today = new Date();
     this.bookingsError.set(null);
-    this.manager.gymBookings(gymId, { from: addDays(today, -14), to: addDays(today, 30) }).subscribe({
-      next: (list) => this.bookings.set(list),
-      error: (err: unknown) => this.bookingsError.set(errorMessage(err)),
-    });
+    this.manager
+      .gymBookings(gymId, { from: addDays(today, -14), to: addDays(today, 30) })
+      .subscribe({
+        next: (list) => this.bookings.set(list),
+        error: (err: unknown) => this.bookingsError.set(errorMessage(err)),
+      });
   }
 
   private loadSessions(): void {

@@ -52,7 +52,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
       padding: 0;
       font-size: 1.1rem;
       line-height: 1;
-      color: #cbd5e1;
+      color: var(--color-border);
       cursor: default;
     }
     .sm .star {
@@ -60,7 +60,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
     }
     .star.filled,
     .star.half {
-      color: #f59e0b;
+      color: var(--color-star);
     }
     .editable .star {
       cursor: pointer;
@@ -85,7 +85,7 @@ export class RatingStarsComponent {
 
   readonly stars = [1, 2, 3, 4, 5];
   readonly hover = signal(0);
-  readonly displayed = computed(() => (this.hover() > 0 ? this.hover() : this.rating() ?? 0));
+  readonly displayed = computed(() => (this.hover() > 0 ? this.hover() : (this.rating() ?? 0)));
 
   select(star: number): void {
     if (this.editable()) {

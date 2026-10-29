@@ -46,8 +46,10 @@ import { ToastService } from '../../../core/services/toast.service';
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      border: 1px solid var(--color-border);
-      background: #fff;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg-strong);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
       color: var(--color-text-muted);
       border-radius: 999px;
       width: 36px;
@@ -70,7 +72,7 @@ import { ToastService } from '../../../core/services/toast.service';
     .fav.active {
       color: var(--color-primary);
       border-color: var(--color-primary);
-      background: #fff7ed;
+      background: var(--color-primary-light);
     }
     .fav:disabled {
       opacity: 0.6;

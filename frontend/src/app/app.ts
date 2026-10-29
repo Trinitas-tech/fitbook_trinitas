@@ -9,6 +9,7 @@ import { ToastsComponent } from './shared/components/toasts/toasts.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, NavbarComponent, BottomTabsComponent, ToastsComponent],
   template: `
+    <div class="aurora" aria-hidden="true"></div>
     <app-navbar />
     <router-outlet />
     <app-bottom-tabs />

@@ -37,11 +37,13 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 import { WeekCalendarComponent } from '../../../shared/components/week-calendar/week-calendar.component';
 import { ManagerGymNavComponent } from '../gym-nav/manager-gym-nav.component';
 import { ManagerGymStore } from '../manager-gym.store';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-manager-gym-bookings',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     DatePipe,
     RouterLink,
     AlertComponent,
@@ -98,7 +100,7 @@ import { ManagerGymStore } from '../manager-gym.store';
             <span class="spinner" style="width: 16px; height: 16px; border-width: 2px"></span>
             Export en cours…
           } @else {
-            ⬇ Exporter en CSV
+            <app-icon name="download" size="16" /> Exporter en CSV
           }
         </button>
       </div>

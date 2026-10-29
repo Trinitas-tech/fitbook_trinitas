@@ -2,17 +2,24 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CourseCard, LEVEL_LABELS } from '../../../core/models';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-course-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, DatePipe],
+  imports: [IconComponent, RouterLink, CurrencyPipe, DatePipe],
   template: `
     <a class="card card-link course-card" [routerLink]="['/cours', course().id]">
       @if (course().imageUrl) {
         <img class="card-img" [src]="course().imageUrl" [alt]="course().title" loading="lazy" />
       } @else {
-        <div class="card-img-placeholder" aria-hidden="true">{{ course().activity.icon || '🏃' }}</div>
+        <div class="card-img-placeholder" aria-hidden="true">
+          @if (course().activity.icon) {
+            {{ course().activity.icon }}
+          } @else {
+            <app-icon name="activity" size="40" />
+          }
+        </div>
       }
       <div class="body">
         <div class="flex between">
@@ -20,16 +27,25 @@ import { CourseCard, LEVEL_LABELS } from '../../../core/models';
           <span class="badge">{{ levelLabel() }}</span>
         </div>
         <h3 class="title">{{ course().title }}</h3>
-        <p class="muted small">🏢 {{ course().gym.name }} · {{ course().gym.city }}</p>
+        <p class="muted small">
+          <app-icon name="building" size="14" /> {{ course().gym.name }} · {{ course().gym.city }}
+        </p>
         @if (course().coach) {
-          <p class="muted small">👤 {{ course().coach!.firstName }} {{ course().coach!.lastName }}</p>
+          <p class="muted small">
+            <app-icon name="user" size="14" /> {{ course().coach!.firstName }}
+            {{ course().coach!.lastName }}
+          </p>
         }
         <div class="flex between meta">
-          <span class="small muted">⏱ {{ course().durationMinutes }} min</span>
+          <span class="small muted"
+            ><app-icon name="timer" size="14" /> {{ course().durationMinutes }} min</span
+          >
           <span class="price">{{ course().price | currency: 'EUR' : 'symbol' : '1.0-2' }}</span>
         </div>
         @if (course().nextSessionAt) {
-          <p class="next">Prochaine séance : {{ course().nextSessionAt | date: 'EEE d MMM à HH:mm' }}</p>
+          <p class="next">
+            Prochaine séance : {{ course().nextSessionAt | date: 'EEE d MMM à HH:mm' }}
+          </p>
         }
       </div>
     </a>

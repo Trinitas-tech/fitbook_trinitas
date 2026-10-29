@@ -1,17 +1,20 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { IconComponent } from '../icon/icon.component';
 
 export type AlertType = 'success' | 'error' | 'info' | 'warning';
 
 @Component({
   selector: 'app-alert',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IconComponent],
   template: `
     @if (message()) {
       <div class="alert alert-{{ type() }}" role="alert">
-        <span class="alert-icon" aria-hidden="true">{{ icon() }}</span>
+        <span class="alert-icon"><app-icon [name]="icon()" size="18" /></span>
         <div>
           @if (title()) {
-            <strong>{{ title() }}</strong><br />
+            <strong>{{ title() }}</strong
+            ><br />
           }
           {{ message() }}
           <ng-content />
@@ -21,7 +24,8 @@ export type AlertType = 'success' | 'error' | 'info' | 'warning';
   `,
   styles: `
     .alert-icon {
-      font-weight: 700;
+      display: inline-flex;
+      margin-top: 2px;
     }
   `,
 })
@@ -30,16 +34,17 @@ export class AlertComponent {
   readonly message = input<string | null | undefined>(null);
   readonly title = input<string | null>(null);
 
-  icon(): string {
+  /** Icône + couleur : l'information n'est jamais portée par la couleur seule. */
+  readonly icon = computed(() => {
     switch (this.type()) {
       case 'success':
-        return '✓';
+        return 'check';
       case 'error':
-        return '✕';
+        return 'x';
       case 'warning':
-        return '!';
+        return 'alert-triangle';
       default:
-        return 'i';
+        return 'info';
     }
-  }
+  });
 }

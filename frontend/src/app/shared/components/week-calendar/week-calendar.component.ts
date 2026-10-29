@@ -25,9 +25,23 @@ interface CalendarDay {
     <div class="calendar card">
       <div class="toolbar">
         <div class="nav">
-          <button type="button" class="btn btn-outline btn-sm" (click)="shift(-1)" aria-label="Période précédente">‹</button>
+          <button
+            type="button"
+            class="btn btn-outline btn-sm"
+            (click)="shift(-1)"
+            aria-label="Période précédente"
+          >
+            ‹
+          </button>
           <button type="button" class="btn btn-ghost btn-sm" (click)="today()">Aujourd'hui</button>
-          <button type="button" class="btn btn-outline btn-sm" (click)="shift(1)" aria-label="Période suivante">›</button>
+          <button
+            type="button"
+            class="btn btn-outline btn-sm"
+            (click)="shift(1)"
+            aria-label="Période suivante"
+          >
+            ›
+          </button>
         </div>
         <div class="period">
           @if (view() === 'week') {
@@ -38,8 +52,22 @@ interface CalendarDay {
         </div>
         @if (showViewToggle()) {
           <div class="tabs-inline">
-            <button type="button" class="chip" [class.active]="view() === 'week'" (click)="viewChange.emit('week')">Semaine</button>
-            <button type="button" class="chip" [class.active]="view() === 'month'" (click)="viewChange.emit('month')">Mois</button>
+            <button
+              type="button"
+              class="chip"
+              [class.active]="view() === 'week'"
+              (click)="viewChange.emit('week')"
+            >
+              Semaine
+            </button>
+            <button
+              type="button"
+              class="chip"
+              [class.active]="view() === 'month'"
+              (click)="viewChange.emit('month')"
+            >
+              Mois
+            </button>
           </div>
         }
       </div>
@@ -54,7 +82,12 @@ interface CalendarDay {
         </div>
         <div class="grid" [class.month]="view() === 'month'">
           @for (day of days(); track day.date.getTime()) {
-            <div class="day" [class.today]="day.isToday" [class.out]="!day.inMonth" [class.empty]="day.sessions.length === 0">
+            <div
+              class="day"
+              [class.today]="day.isToday"
+              [class.out]="!day.inMonth"
+              [class.empty]="day.sessions.length === 0"
+            >
               <div class="day-head">
                 <span class="day-label">{{ day.date | date: 'EEE' }}</span>
                 <span class="day-num">{{ day.date | date: 'd' }}</span>
@@ -131,7 +164,8 @@ interface CalendarDay {
       gap: 6px;
     }
     .day {
-      background: var(--color-bg);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 10px;
       padding: 8px;
       min-height: 120px;
@@ -176,9 +210,9 @@ interface CalendarDay {
       gap: 1px;
       width: 100%;
       text-align: left;
-      border: 1px solid #bfdbfe;
-      background: #eff6ff;
-      color: #1e3a8a;
+      border: 1px solid rgba(3, 105, 161, 0.25);
+      background: var(--color-info-light);
+      color: var(--color-info);
       border-radius: 8px;
       padding: 5px 7px;
       font-size: 0.75rem;
@@ -191,20 +225,20 @@ interface CalendarDay {
       box-shadow: 0 0 0 2px var(--color-primary);
     }
     .session.status-complete {
-      background: #fef3c7;
-      border-color: #fde68a;
-      color: #92400e;
+      background: var(--color-warning-light);
+      border-color: rgba(146, 64, 14, 0.25);
+      color: var(--color-warning);
     }
     .session.status-annulee {
-      background: #fee2e2;
-      border-color: #fecaca;
-      color: #991b1b;
+      background: var(--color-danger-light);
+      border-color: rgba(185, 28, 28, 0.25);
+      color: var(--color-danger);
       text-decoration: line-through;
     }
     .session.status-terminee {
-      background: #f1f5f9;
-      border-color: #e2e8f0;
-      color: #475569;
+      background: var(--glass-bg);
+      border-color: var(--color-border);
+      color: var(--color-text-muted);
     }
     .time {
       font-weight: 700;
@@ -220,7 +254,7 @@ interface CalendarDay {
       opacity: 0.8;
     }
     .none {
-      color: #cbd5e1;
+      color: var(--color-border);
       font-size: 0.8rem;
     }
     @media (max-width: 768px) {
@@ -294,7 +328,9 @@ export class WeekCalendarComponent {
 
   shift(direction: 1 | -1): void {
     const next =
-      this.view() === 'month' ? addMonths(this.cursor(), direction) : addDays(this.cursor(), 7 * direction);
+      this.view() === 'month'
+        ? addMonths(this.cursor(), direction)
+        : addDays(this.cursor(), 7 * direction);
     this.cursorChange.emit(next);
   }
 

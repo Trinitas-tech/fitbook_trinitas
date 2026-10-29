@@ -8,11 +8,13 @@ import { CoachCardComponent } from '../../shared/components/coach-card/coach-car
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { GymCardComponent } from '../../shared/components/gym-card/gym-card.component';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     ReactiveFormsModule,
     RouterLink,
     AlertComponent,
@@ -24,11 +26,18 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
   template: `
     <section class="hero">
       <div class="container">
-        <h1 class="hero-title">Trouvez votre prochaine séance de sport</h1>
-        <p class="hero-sub">Salles, cours collectifs et coachs près de chez vous. Réservez en quelques clics.</p>
+        <h1 class="hero-title text-gradient">Trouvez votre prochaine séance de sport</h1>
+        <p class="hero-sub">
+          Salles, cours collectifs et coachs près de chez vous. Réservez en quelques clics.
+        </p>
         <form class="search-bar" [formGroup]="form" (ngSubmit)="search()">
           <label class="sr-only" for="home-q">Mot-clé</label>
-          <input id="home-q" class="input" formControlName="q" placeholder="Yoga, crossfit, nom d'une salle…" />
+          <input
+            id="home-q"
+            class="input"
+            formControlName="q"
+            placeholder="Yoga, crossfit, nom d'une salle…"
+          />
           <label class="sr-only" for="home-city">Ville</label>
           <input id="home-city" class="input" formControlName="city" placeholder="Ville" />
           <button type="submit" class="btn btn-primary btn-lg">Rechercher</button>
@@ -51,7 +60,12 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
           <div class="chips">
             @for (a of activities(); track a.id) {
               <a class="chip" [routerLink]="['/recherche']" [queryParams]="{ activity: a.id }">
-                <span aria-hidden="true">{{ a.icon || '🏅' }}</span> {{ a.name }}
+                @if (a.icon) {
+                  <span aria-hidden="true">{{ a.icon }}</span>
+                } @else {
+                  <app-icon name="award" size="16" />
+                }
+                {{ a.name }}
               </a>
             }
           </div>
@@ -61,14 +75,20 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
       <section class="section">
         <div class="section-header">
           <h2 class="section-title">Salles de sport</h2>
-          <a [routerLink]="['/recherche']" [queryParams]="{ type: 'gym' }">Voir toutes les salles →</a>
+          <a [routerLink]="['/recherche']" [queryParams]="{ type: 'gym' }"
+            >Voir toutes les salles →</a
+          >
         </div>
         @if (gymsLoading()) {
           <app-loader />
         } @else if (gymsError()) {
           <app-alert type="error" [message]="gymsError()" />
         } @else if (gyms().length === 0) {
-          <app-empty-state icon="🏢" title="Aucune salle" message="Aucune salle n'est encore référencée." />
+          <app-empty-state
+            icon="building"
+            title="Aucune salle"
+            message="Aucune salle n'est encore référencée."
+          />
         } @else {
           <div class="grid">
             @for (g of gyms(); track g.id) {
@@ -81,14 +101,20 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
       <section class="section">
         <div class="section-header">
           <h2 class="section-title">Coachs</h2>
-          <a [routerLink]="['/recherche']" [queryParams]="{ type: 'coach' }">Voir tous les coachs →</a>
+          <a [routerLink]="['/recherche']" [queryParams]="{ type: 'coach' }"
+            >Voir tous les coachs →</a
+          >
         </div>
         @if (coachesLoading()) {
           <app-loader />
         } @else if (coachesError()) {
           <app-alert type="error" [message]="coachesError()" />
         } @else if (coaches().length === 0) {
-          <app-empty-state icon="👤" title="Aucun coach" message="Aucun coach n'est encore disponible." />
+          <app-empty-state
+            icon="user"
+            title="Aucun coach"
+            message="Aucun coach n'est encore disponible."
+          />
         } @else {
           <div class="grid">
             @for (c of coaches(); track c.id) {
@@ -101,17 +127,15 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
   `,
   styles: `
     .hero {
-      background: linear-gradient(135deg, var(--color-dark) 0%, #1e293b 60%, #7c2d12 160%);
-      color: #fff;
-      padding: 64px 0 56px;
+      padding: 64px 0 48px;
     }
     .hero-title {
-      color: #fff;
-      font-size: 2.4rem;
-      max-width: 640px;
+      font-size: 2.75rem;
+      max-width: 700px;
+      margin-bottom: 0.4em;
     }
     .hero-sub {
-      color: #cbd5e1;
+      color: var(--color-text-muted);
       font-size: 1.1rem;
       max-width: 560px;
     }
@@ -119,16 +143,18 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
       display: grid;
       grid-template-columns: 2fr 1fr auto;
       gap: 10px;
-      background: #fff;
+      background: var(--glass-bg-strong);
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
       padding: 10px;
-      border-radius: 14px;
-      box-shadow: var(--shadow-hover);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--glass-shadow-hover);
       max-width: 820px;
       margin-top: 24px;
     }
     .search-bar .input {
       border: none;
-      background: var(--color-bg);
     }
     .chips {
       display: flex;

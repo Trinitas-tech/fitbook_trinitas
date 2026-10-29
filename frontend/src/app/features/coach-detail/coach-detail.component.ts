@@ -1,5 +1,13 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Booking, CoachDetail, DAY_LABELS, Session, errorMessage } from '../../core/models';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -11,11 +19,13 @@ import { RatingStarsComponent } from '../../shared/components/rating-stars/ratin
 import { ReviewFormComponent } from '../../shared/components/review-form/review-form.component';
 import { ReviewListComponent } from '../../shared/components/review-list/review-list.component';
 import { SessionListComponent } from '../../shared/components/session-list/session-list.component';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-coach-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconComponent,
     CurrencyPipe,
     RouterLink,
     AlertComponent,
@@ -37,7 +47,11 @@ import { SessionListComponent } from '../../shared/components/session-list/sessi
       } @else if (coach(); as c) {
         <div class="card profile">
           @if (c.avatarUrl) {
-            <img class="avatar avatar-lg" [src]="c.avatarUrl" [alt]="c.firstName + ' ' + c.lastName" />
+            <img
+              class="avatar avatar-lg"
+              [src]="c.avatarUrl"
+              [alt]="c.firstName + ' ' + c.lastName"
+            />
           } @else {
             <span class="avatar avatar-lg">{{ c.firstName[0] }}{{ c.lastName[0] }}</span>
           }
@@ -50,16 +64,26 @@ import { SessionListComponent } from '../../shared/components/session-list/sessi
                     <span class="badge badge-primary">{{ c.specialty }}</span>
                   }
                   @if (c.city) {
-                    <span class="muted">📍 {{ c.city }}</span>
+                    <span class="muted"><app-icon name="map-pin" size="14" /> {{ c.city }}</span>
                   }
                 </div>
               </div>
-              <app-favorite-button type="coach" [id]="c.id" [isFavorite]="c.isFavorite" [showLabel]="true" />
+              <app-favorite-button
+                type="coach"
+                [id]="c.id"
+                [isFavorite]="c.isFavorite"
+                [showLabel]="true"
+              />
             </div>
             <div class="flex flex-wrap mt-16" style="gap: 16px">
               <app-rating-stars [rating]="c.averageRating" [count]="c.reviewCount" />
               @if (c.hourlyRate !== null) {
-                <span><span class="price">{{ c.hourlyRate | currency: 'EUR' : 'symbol' : '1.0-2' }}</span> <span class="muted">/ heure</span></span>
+                <span
+                  ><span class="price">{{
+                    c.hourlyRate | currency: 'EUR' : 'symbol' : '1.0-2'
+                  }}</span>
+                  <span class="muted">/ heure</span></span
+                >
               }
             </div>
           </div>
@@ -78,7 +102,12 @@ import { SessionListComponent } from '../../shared/components/session-list/sessi
 
             <section class="section" id="seances">
               <h2>Séances à venir</h2>
-              <app-session-list [sessions]="upcoming()" [showTitle]="true" (book)="selected.set($event)" emptyMessage="Aucune séance à venir pour ce coach." />
+              <app-session-list
+                [sessions]="upcoming()"
+                [showTitle]="true"
+                (book)="selected.set($event)"
+                emptyMessage="Aucune séance à venir pour ce coach."
+              />
             </section>
 
             <section class="section card">
@@ -86,7 +115,11 @@ import { SessionListComponent } from '../../shared/components/session-list/sessi
               <app-review-list [reviews]="c.reviews" />
             </section>
 
-            <app-review-form [coachId]="c.id" heading="Donner votre avis sur ce coach" (published)="reload()" />
+            <app-review-form
+              [coachId]="c.id"
+              heading="Donner votre avis sur ce coach"
+              (published)="reload()"
+            />
           </div>
 
           <aside>
@@ -114,15 +147,24 @@ import { SessionListComponent } from '../../shared/components/session-list/sessi
           <div class="fixed-bar hide-desktop">
             <div>
               <strong>Prochaine séance</strong>
-              <span class="muted small">{{ s.price | currency: 'EUR' : 'symbol' : '1.0-2' }} · {{ s.remainingSeats }} place(s)</span>
+              <span class="muted small"
+                >{{ s.price | currency: 'EUR' : 'symbol' : '1.0-2' }} ·
+                {{ s.remainingSeats }} place(s)</span
+              >
             </div>
-            <button type="button" class="btn btn-primary" (click)="selected.set(s)">Réserver</button>
+            <button type="button" class="btn btn-primary" (click)="selected.set(s)">
+              Réserver
+            </button>
           </div>
         }
       }
 
       @if (selected(); as s) {
-        <app-book-session-dialog [session]="s" (booked)="onBooked($event)" (cancelled)="selected.set(null)" />
+        <app-book-session-dialog
+          [session]="s"
+          (booked)="onBooked($event)"
+          (cancelled)="selected.set(null)"
+        />
       }
     </div>
   `,
@@ -179,8 +221,10 @@ import { SessionListComponent } from '../../shared/components/session-list/sessi
         left: 0;
         right: 0;
         bottom: var(--bottom-tabs-height);
-        background: #fff;
-        border-top: 1px solid var(--color-border);
+        background: var(--glass-bg-strong);
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        backdrop-filter: blur(var(--glass-blur));
+        border-top: 1px solid var(--glass-border);
         padding: 12px 16px;
         justify-content: space-between;
         align-items: center;
@@ -209,13 +253,17 @@ export class CoachDetailComponent implements OnInit {
       .filter((s) => new Date(s.endAt).getTime() >= Date.now())
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
   );
-  readonly firstBookable = computed(() => this.upcoming().find((s) => s.isBookable && !s.myBookingId) ?? null);
+  readonly firstBookable = computed(
+    () => this.upcoming().find((s) => s.isBookable && !s.myBookingId) ?? null,
+  );
 
   readonly availabilityByDay = computed(() => {
     const list = this.coach()?.availabilities ?? [];
     return DAY_LABELS.map((label, i) => ({
       label,
-      slots: list.filter((a) => a.dayOfWeek === i + 1).sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
+      slots: list
+        .filter((a) => a.dayOfWeek === i + 1)
+        .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
     }));
   });
 
