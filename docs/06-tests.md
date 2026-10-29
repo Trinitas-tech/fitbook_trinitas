@@ -17,7 +17,7 @@ cd backend && php bin/phpunit tests/Unit
 | `Entity/BookingTest` | annulation possible > 2 h avant, refusée < 2 h ou déjà annulée ; format `FB-XXXXXXXXXXXX` et renouvellement du QR code | US-17, US-22 |
 | `Service/BookingServiceTest` | 1 à 5 places, séance introuvable (404), confirmation + e-mail, « Séance complète » (409), doublon refusé, réactivation d'une réservation annulée, séance passée / annulée refusée, annulation libère la place + e-mail, annulation forcée par l'admin | US-15, US-17, US-52, US-60, US-61 |
 
-Résultat du 29/10/2026 : **22 tests, 55 assertions, OK**.
+Résultat du 29/10/2026 : **23 tests, 64 assertions, OK**.
 
 ## 2. Tests d'intégration – PHPUnit `WebTestCase` (`backend/tests/Functional`)
 

@@ -45,7 +45,7 @@ de test **Mailtrap**, mettre dans `backend/.env.local` :
 ```bash
 # Unitaires + intégration (PHPUnit) – base fitbook_test créée une fois :
 #   mysql -u root -e "CREATE DATABASE fitbook_test; GRANT ALL ON fitbook_test.* TO 'fitbook'@'localhost';"
-cd backend && php bin/phpunit                 # 48 tests (22 unitaires, 26 d'intégration API)
+cd backend && php bin/phpunit                 # 49 tests (23 unitaires, 26 d'intégration API)
 
 # API (Postman / Newman) – serveur backend lancé, fixtures chargées
 npm install -g newman
