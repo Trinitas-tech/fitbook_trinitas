@@ -20,11 +20,19 @@ import {
   DonutSlice,
 } from '../../../shared/components/donut-chart/donut-chart.component';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
+import { StressChartComponent } from '../../../shared/components/stress-chart/stress-chart.component';
 
 @Component({
   selector: 'app-admin-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, AlertComponent, LoaderComponent, BarChartComponent, DonutChartComponent],
+  imports: [
+    RouterLink,
+    AlertComponent,
+    LoaderComponent,
+    BarChartComponent,
+    DonutChartComponent,
+    StressChartComponent,
+  ],
   template: `
     <div class="page-header">
       <h1 class="page-title">Statistiques globales</h1>
@@ -56,6 +64,12 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 
       <!-- US-54 : graphiques SVG -->
       <div class="charts">
+        <section class="card chart-card">
+          <h3>Courbe de stress</h3>
+          <p class="muted small">Exemple sur une semaine · Données de démonstration</p>
+          <app-stress-chart [measurements]="stressDemo" />
+        </section>
+
         <section class="card chart-card">
           <h3>Inscriptions par mois</h3>
           <p class="muted small">Nouveaux comptes sur les 6 derniers mois</p>
@@ -165,6 +179,16 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   `,
 })
 export class AdminDashboardComponent implements OnInit {
+  readonly stressDemo = [
+    { label: 'Lun.', value: 6 },
+    { label: 'Mar.', value: 8 },
+    { label: 'Mer.', value: 5 },
+    { label: 'Jeu.', value: 7 },
+    { label: 'Ven.', value: 4 },
+    { label: 'Sam.', value: 3 },
+    { label: 'Dim.', value: 2 },
+  ];
+
   private readonly admin = inject(AdminService);
 
   readonly stats = signal<AdminStats | null>(null);
